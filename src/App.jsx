@@ -1,17 +1,20 @@
-import React, { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom';
-import Bar from './components/bar'
-import Header from './components/header'
+import React, { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import Bar from "./components/bar";
+import Header from "./components/header";
 
 const App = () => {
   const location = useLocation();
-  const hideBarRoutes = ['/detail', '/categories'];
-  const shouldHideBar = hideBarRoutes.some(path => location.pathname.startsWith(path));
-  const tg = window.Telegram.WebApp;
+  const hideBarRoutes = ["/detail", "/categories"];
+  const shouldHideBar = hideBarRoutes.some((path) =>
+    location.pathname.startsWith(path)
+  );
+
   useEffect(() => {
+    const tg = window.Telegram.WebApp;
     tg.ready(); // WebApp ishga tayyor
     tg.expand(); // butun ekran qilib ochadi
-
+    alert(tg.initDataUnsafe?.user)
     console.log("Telegram WebApp foydalanuvchi:", tg.initDataUnsafe?.user);
   }, []);
   return (
@@ -19,11 +22,11 @@ const App = () => {
       <Header />
       <main className="pb-16">
         <Outlet />
-        <h1 className="text-2xl font-bold">Telegram Do‘kon {tg.initDataUnsafe?.user}</h1>
+
       </main>
       {!shouldHideBar && <Bar />}
     </div>
-  )
-}
+  );
+};
 
 export default App;
