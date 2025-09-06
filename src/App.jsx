@@ -14,7 +14,7 @@ const App = () => {
     const tg = window.Telegram.WebApp;
     tg.ready(); // WebApp ishga tayyor
     tg.expand(); // butun ekran qilib ochadi
-    alert(tg.initDataUnsafe?.user)
+    alert(tg.initDataUnsafe?.user.id)
     console.log("Telegram WebApp foydalanuvchi:", tg.initDataUnsafe?.user);
   }, []);
   return (
