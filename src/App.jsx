@@ -32,7 +32,7 @@ const App = () => {
       setUser(tgUser);
 
       // backendga yuborish
-      axios.post("https://telegram-web-app-backend.laravel.cloud/api/telegram/save-user", {
+      axios.post("https://7b4d0d41c088.ngrok-free.app/api/telegram/save-user", {
         telegram_id: tgUser.id,
         username: tgUser.username,
         first_name: tgUser.first_name,
