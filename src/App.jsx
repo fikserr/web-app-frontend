@@ -31,7 +31,7 @@ const App = () => {
     const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
     setUser(tgUser);
     if (tg?.initData) {
-      axios.post("https://your-backend.com/api/telegram/check", {
+      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", {
         initData: tg.initData
       })
         .then(res => console.log("✅ Verified:", res.data))
