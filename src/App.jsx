@@ -30,7 +30,7 @@ const App = () => {
   useEffect(() => {
     const initData = window.Telegram?.WebApp?.initData; // signed string
     if (initData) {
-      axios.post("/api/telegram/check-telegram", { initData })
+      axios.post("/api/telegram/check", { initData })
         .then(res => {
           setResponseData(res.data);       // backend javobini saqlaymiz
           if (res.data.ok) setUser(res.data.user);
