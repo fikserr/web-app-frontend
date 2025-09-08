@@ -25,16 +25,16 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-  const [setInitData, setInitDataSet] = useState(null);
+  const [setInitData, setInitDataSet] = useState('');
   const [responseData, setResponseData] = useState(null); // backend javobini saqlash uchun
 
   useEffect(() => {
     const initData = window.Telegram?.WebApp?.initData; // signed string
      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
       setUser(tgUser);
-      setInitDataSet(initData);
+      setInitDataSet(`${initData}`);
     if (initData) {
-      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData })
+      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", {initData: setInitData })
         .then(res => {
           setResponseData(res.data);       // backend javobini saqlaymiz
         })
