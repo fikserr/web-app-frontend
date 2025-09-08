@@ -25,9 +25,9 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-
+  const initData = window.Telegram?.WebApp?.initData;
   useEffect(() => {
-    const initData = window.Telegram?.WebApp?.initData;
+
     if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
       const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
       setUser(tgUser);
@@ -43,7 +43,7 @@ const App = () => {
   return (
     <div>
       {user ? (
-        <p>Salom, {user.first_name} (ID: {user.id})</p>
+        <p>Salom, {user.first_name} (ID: {user.id}) initData {initData}</p>
       ) : (
         <p>Telegram user topilmadi</p>
       )}
