@@ -25,28 +25,40 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-  const initData = window.Telegram?.WebApp?.initData;
-  useEffect(() => {
+  const [responseData, setResponseData] = useState(null); // backend javobini saqlash uchun
 
-    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-      setUser(tgUser);
-      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check-telegram", { initData })
+  useEffect(() => {
+    const initData = window.Telegram?.WebApp?.initData; // signed string
+    if (initData) {
+      axios.post("/api/telegram/check-telegram", { initData })
         .then(res => {
+          setResponseData(res.data);       // backend javobini saqlaymiz
           if (res.data.ok) setUser(res.data.user);
-          else console.log('Verification failed', res.data.error);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          setResponseData({ ok: false, error: err.message });
+        });
     }
   }, []);
 
   return (
-    <div>
+    <div className="p-4">
+      <h1>Telegram WebApp User</h1>
+
       {user ? (
-        <p>Salom, {user.first_name} (ID: {user.id}) initData {initData}</p>
+        <div>
+          <p>Salom, {user.first_name} (ID: {user.id})</p>
+        </div>
       ) : (
         <p>Telegram user topilmadi</p>
       )}
+
+      <hr />
+
+      <h2>Backend Response:</h2>
+      <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        {JSON.stringify(responseData, null, 2)}
+      </pre>
     </div>
   );
 };
