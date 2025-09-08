@@ -25,35 +25,27 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-  const [initData, setInitData] = useState("");
 
   useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-
-    if (tg?.initData) {
-      setInitData(tg.initData); // raw initData
-      setUser(tg.initDataUnsafe?.user || null);
-
-      // backendga yuborish
-      axios
-        .post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData: tg.initData })
-        .then((res) => {
-          console.log("✅ Verified:", res.data);
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+      setUser(tgUser);
+      axios.post("/api/telegram/check-telegram", { initData })
+        .then(res => {
+          if (res.data.ok) setUser(res.data.user);
+          else console.log('Verification failed', res.data.error);
         })
-        .catch((err) => {
-          console.error("❌ Error:", err);
-        });
-    } else {
-      setInitData("❌ Telegram initData topilmadi");
+        .catch(err => console.log(err));
     }
   }, []);
 
   return (
     <div>
-      <h2>Telegram User</h2>
-      <pre>{JSON.stringify(user, null, 2)}</pre>
-      <h3>InitData</h3>
-      <pre>{initData}</pre>
+      {user ? (
+        <p>Salom, {user.first_name} (ID: {user.id})</p>
+      ) : (
+        <p>Telegram user topilmadi</p>
+      )}
     </div>
   );
 };
