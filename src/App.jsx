@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+// import { Outlet, useLocation } from "react-router-dom";
 import Bar from "./components/bar";
 import Header from "./components/header";
 import axios from "axios";
@@ -29,11 +29,12 @@ const App = () => {
 
   useEffect(() => {
     const initData = window.Telegram?.WebApp?.initData; // signed string
+     const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+      setUser(tgUser);
     if (initData) {
       axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData })
         .then(res => {
           setResponseData(res.data);       // backend javobini saqlaymiz
-          if (res.data.ok) setUser(res.data.user);
         })
         .catch(err => {
           setResponseData({ ok: false, error: err.message });
