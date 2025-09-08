@@ -25,18 +25,19 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-  const [setInitData, setInitDataSet] = useState('');
-  const [responseData, setResponseData] = useState(null); // backend javobini saqlash uchun
+  const [initData, setInitData] = useState('');
+  const [responseData, setResponseData] = useState(null);
 
   useEffect(() => {
-    const initData = window.Telegram?.WebApp?.initData; // signed string
-     const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-      setUser(tgUser);
-      setInitDataSet(`${initData}`);
-    if (initData) {
-      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", {initData: setInitData })
+    const tgInitData = window.Telegram?.WebApp?.initData; // signed string
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    setUser(tgUser);
+    setInitData(tgInitData || '');
+
+    if (tgInitData) {
+      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData: tgInitData })
         .then(res => {
-          setResponseData(res.data);       // backend javobini saqlaymiz
+          setResponseData(res.data);
         })
         .catch(err => {
           setResponseData({ ok: false, error: err.message });
@@ -50,7 +51,7 @@ const App = () => {
 
       {user ? (
         <div>
-          <p>Salom, {user.first_name} (ID: {user.id}) initData {setInitData}</p>
+          <p>Salom, {user.first_name} (ID: {user.id}) initData {initData}</p>
         </div>
       ) : (
         <p>Telegram user topilmadi</p>
