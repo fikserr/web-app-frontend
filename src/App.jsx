@@ -25,10 +25,15 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
-
+  const [initData, setInitData] = useState("");
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+    if (tg?.initData) {
+      setInitData(tg.initData);
+    } else {
+      setInitData("❌ Telegram initData topilmadi");
+    }
     setUser(tgUser);
     if (tg?.initData) {
       axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", {
@@ -43,9 +48,12 @@ const App = () => {
   return (
     <div>
       {user ? (
-        <p>Salom, {user.first_name} (ID: {user.id})</p>
+        <p className="break-words text-sm bg-gray-100 p-2 rounded">
+          {initData}
+        </p>
       ) : (
         <p>Telegram user topilmadi</p>
+
       )}
     </div>
   );
