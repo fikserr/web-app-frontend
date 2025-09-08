@@ -35,7 +35,7 @@ const App = () => {
     setInitData(tgInitData || '');
 
     if (tgInitData) {
-      axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData: tgInitData })
+      axios.post("https://756a4adcb607.ngrok-free.app/api/telegram/check", { initData: tgInitData })
         .then(res => {
           setResponseData(res.data);
         })
