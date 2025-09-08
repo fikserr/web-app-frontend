@@ -36,7 +36,7 @@ const App = () => {
 
       // backendga yuborish
       axios
-        .post("http://127.0.0.1:8000/api/telegram/check", { initData: tg.initData })
+        .post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData: tg.initData })
         .then((res) => {
           console.log("✅ Verified:", res.data);
         })
