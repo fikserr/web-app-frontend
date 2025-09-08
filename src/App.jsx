@@ -5,41 +5,40 @@ import Header from "./components/header";
 import axios from "axios";
 
 const App = () => {
-//   const location = useLocation();
-//   const hideBarRoutes = ["/detail", "/categories"];
-//   const shouldHideBar = hideBarRoutes.some((path) =>
-//     location.pathname.startsWith(path)
-//   );
+  //   const location = useLocation();
+  //   const hideBarRoutes = ["/detail", "/categories"];
+  //   const shouldHideBar = hideBarRoutes.some((path) =>
+  //     location.pathname.startsWith(path)
+  //   );
 
 
-//   return (
-//     <div className="min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-//       <Header />
-//       <main className="pb-16">
-//         <Outlet />
+  //   return (
+  //     <div className="min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+  //       <Header />
+  //       <main className="pb-16">
+  //         <Outlet />
 
-//       </main>
-//       {!shouldHideBar && <Bar />}
-//     </div>
-//   );
-// };
+  //       </main>
+  //       {!shouldHideBar && <Bar />}
+  //     </div>
+  //   );
+  // };
 
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-      setUser(tgUser);
-
-      // backendga yuborish
-      axios.post("https://7b4d0d41c088.ngrok-free.app/api/telegram/save-user", {
-        telegram_id: tgUser.id,
-        username: tgUser.username,
-        first_name: tgUser.first_name,
-        last_name: tgUser.last_name,
-      });
+    const tg = window.Telegram?.WebApp;
+    const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+    setUser(tgUser);
+    if (tg?.initData) {
+      axios.post("https://your-backend.com/api/telegram/check", {
+        initData: tg.initData
+      })
+        .then(res => console.log("✅ Verified:", res.data))
+        .catch(err => console.error("❌ Error:", err));
     }
   }, []);
+
 
   return (
     <div>
