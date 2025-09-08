@@ -25,12 +25,14 @@ const App = () => {
   // };
 
   const [user, setUser] = useState(null);
+  const [setInitData, setInitDataSet] = useState(null);
   const [responseData, setResponseData] = useState(null); // backend javobini saqlash uchun
 
   useEffect(() => {
     const initData = window.Telegram?.WebApp?.initData; // signed string
      const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
       setUser(tgUser);
+      setInitDataSet(initData);
     if (initData) {
       axios.post("https://490e316e106e.ngrok-free.app/api/telegram/check", { initData })
         .then(res => {
@@ -48,7 +50,7 @@ const App = () => {
 
       {user ? (
         <div>
-          <p>Salom, {user.first_name} (ID: {user.id})</p>
+          <p>Salom, {user.first_name} (ID: {user.id}) initData {setInitData}</p>
         </div>
       ) : (
         <p>Telegram user topilmadi</p>
