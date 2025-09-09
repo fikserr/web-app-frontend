@@ -7,7 +7,7 @@ import useProducts from "../hooks/useProducts";
 import Card from "../components/card";
 
 const Shop = () => {
- 
+ const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const {
     categories,
     loading: categoriesLoading,
@@ -72,11 +72,11 @@ const Shop = () => {
           {!productsLoading && products.length === 0 && (
             <p>Mahsulot topilmadi</p>
           )}
-
+          <p>{tgUser.id}</p>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
             {products?.data?.map((product) => {
               
-              return <Card key={product.id} product={product}/>;
+              return <Card key={product.id} product={product} userId={tgUser.id}/>;
             })}
           </div>
         </div>
