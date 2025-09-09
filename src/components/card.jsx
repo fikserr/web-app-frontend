@@ -9,7 +9,7 @@ const Card = ({ product, userId }) => {
   // serverga update yuborish
   const updateBasket = async (product, action) => {
     try {
-      const res = await axios.post("https://fdca89f74934.ngrok-free.app/api/basket/update", {
+      const res = await axios.post("https://5591610ba1bf.ngrok-free.app/api/basket/update", {
         userId: userId,
         productId: product.id,
         measureId: product.measureId, // product ichida measureId bo‘lishi kerak
