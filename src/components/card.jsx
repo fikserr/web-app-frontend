@@ -1,39 +1,62 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-const Card = ({ product }) => {
+const Card = ({ product, userId }) => {
   const [counts, setCounts] = useState({});
+
   const productInCart = counts[product.id];
-  const handleAdd = (product) => {
-    setCounts((prev) => {
-      const existing = prev[product.id];
-      return {
-        ...prev,
-        [product.id]: {
-          ...product,
-          count: existing ? existing.count + 1 : 1,
-        },
-      };
-    });
+
+  // serverga update yuborish
+  const updateBasket = async (product, action) => {
+    try {
+      const res = await axios.post("https://fdca89f74934.ngrok-free.app/api/basket/update", {
+        userId: userId,
+        productId: product.id,
+        measureId: product.measureId, // product ichida measureId bo‘lishi kerak
+        action: action,
+        price: product.prices[0]?.price,
+      });
+
+      if (res.data.ok) {
+        setCounts((prev) => {
+          const existing = prev[product.id];
+          if (action === "plus") {
+            return {
+              ...prev,
+              [product.id]: {
+                ...product,
+                count: existing ? existing.count + 1 : 1,
+              },
+            };
+          } else if (action === "minus") {
+            if (existing && existing.count > 1) {
+              return {
+                ...prev,
+                [product.id]: {
+                  ...product,
+                  count: existing.count - 1,
+                },
+              };
+            } else {
+              const updated = { ...prev };
+              delete updated[product.id];
+              return updated;
+            }
+          }
+          return prev;
+        });
+      }
+    } catch (err) {
+      console.error("Basket update error", err);
+    }
   };
 
-  // Basketdan kamaytirish
-  const handleRemove = (productId) => {
-    setCounts((prev) => {
-      const updated = { ...prev };
-      if (updated[productId].count > 1) {
-        updated[productId].count -= 1;
-      } else {
-        delete updated[productId];
-      }
-      return updated;
-    });
-  };
   return (
     <div
       key={product.id}
       className="flex flex-col content-center justify-between border rounded-lg overflow-hidden"
     >
-      <div className="">
+      <div>
         <img
           src={product.imageUrl || "/src/assets/no-photo.jpg"}
           alt={product.name}
@@ -41,6 +64,7 @@ const Card = ({ product }) => {
         />
         <h3 className="text-base font-semibold p-2">{product.name}</h3>
       </div>
+
       <div className="p-2">
         <p className="text-lg font-bold">
           {product.prices[0]?.price} {product.prices[0]?.currencyname}
@@ -48,17 +72,17 @@ const Card = ({ product }) => {
 
         {productInCart ? (
           <div className="flex justify-between items-center bg-[rgb(22,113,98)] text-white py-1 rounded mt-1 w-full text-xl">
-            <button onClick={() => handleRemove(product.id)} className="px-3">
+            <button onClick={() => updateBasket(product, "minus")} className="px-3">
               −
             </button>
             <span>{productInCart.count}</span>
-            <button onClick={() => handleAdd(product)} className="px-3">
+            <button onClick={() => updateBasket(product, "plus")} className="px-3">
               +
             </button>
           </div>
         ) : (
           <button
-            onClick={() => handleAdd(product)}
+            onClick={() => updateBasket(product, "plus")}
             className=" bg-[rgb(22,113,98)] text-white py-1 rounded mt-1 w-full text-xl"
           >
             +
