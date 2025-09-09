@@ -12,7 +12,7 @@ const App = () => {
   );
   useEffect(() => {
     const tgInitData = window.Telegram?.WebApp?.initData; // signed string
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    // const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
 
     if (tgInitData) {

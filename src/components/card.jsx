@@ -4,58 +4,60 @@ import axios from "axios";
 const Card = ({ product }) => {
   const [counts, setCounts] = useState({});
 
-  const productInCart = counts[product.id];
+  const productInCart = counts[product.Id];
 
-  // serverga update yuborish
+  // Basketni serverga update qilish
   const updateBasket = async (product, action) => {
-    console.log(action);
-    
     try {
       const res = await axios.post("https://605638c33f72.ngrok-free.app/api/basket/update", {
-        userId: 339299758,
-        productId: product.id,
-        measureId: product.measureId, // product ichida measureId bo‘lishi kerak
-        action: action,
+        userId: 339299758, // bu vaqtincha hardcoded, keyin Telegram initData'dan olasan
+        productId: product.Id,
+        measureId: product.measures[0]?.Id,
+        action,
         price: product.prices[0]?.price,
       });
 
       if (res.data.ok) {
         setCounts((prev) => {
-          const existing = prev[product.id];
+          const existing = prev[product.Id];
+
           if (action === "plus") {
             return {
               ...prev,
-              [product.id]: {
+              [product.Id]: {
                 ...product,
                 count: existing ? existing.count + 1 : 1,
               },
             };
-          } else if (action === "minus") {
+          }
+
+          if (action === "minus") {
             if (existing && existing.count > 1) {
               return {
                 ...prev,
-                [product.id]: {
+                [product.Id]: {
                   ...product,
                   count: existing.count - 1,
                 },
               };
             } else {
               const updated = { ...prev };
-              delete updated[product.id];
+              delete updated[product.Id];
               return updated;
             }
           }
+
           return prev;
         });
       }
     } catch (err) {
-      console.error("Basket update error", err);
+      console.error("Basket update error:", err);
     }
   };
 
   return (
     <div
-      key={product.id}
+      key={product.Id}
       className="flex flex-col content-center justify-between border rounded-lg overflow-hidden"
     >
       <div>
