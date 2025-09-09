@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const Card = ({ product, userId }) => {
+const Card = ({ product }) => {
   const [counts, setCounts] = useState({});
 
   const productInCart = counts[product.id];
 
   // serverga update yuborish
   const updateBasket = async (product, action) => {
+    console.log(action);
+    
     try {
       const res = await axios.post("https://605638c33f72.ngrok-free.app/api/basket/update", {
-        userId: userId,
+        userId: 339299758,
         productId: product.id,
         measureId: product.measureId, // product ichida measureId bo‘lishi kerak
         action: action,
