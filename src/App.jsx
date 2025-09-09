@@ -16,7 +16,7 @@ const App = () => {
 
 
     if (tgInitData) {
-      axios.post("https://605638c33f72.ngrok-free.app/api/telegram/check", { initData: tgInitData })
+      axios.post("https://67725c21a812.ngrok-free.app/api/telegram/check", { initData: tgInitData })
         .then(res => {
           console.log(res.data);
         })

@@ -1,95 +1,157 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const Card = ({ product }) => {
+const Card = ({ product, userId }) => {
   const [counts, setCounts] = useState({});
 
-  const productInCart = counts[product.Id];
+  // komponent mount bo'lganda backenddan hozirgi basketni olib kelish
+  useEffect(() => {
+    const fetchBasket = async () => {
+      try {
+        const res = await axios.get(`https://67725c21a812.ngrok-free.app/api/basket/${userId}`);
+        if (res.data.ok) {
+          const snapshot = {};
+          res.data.basket.forEach(i => {
+            snapshot[i.product_id] = {
+              ...product,
+              count: i.quantity
+            };
+          });
+          setCounts(prev => ({ ...prev, ...snapshot }));
+        }
+      } catch (err) {
+        console.error("Basket fetch error", err);
+      }
+    };
 
-  // Basketni serverga update qilish
-  const updateBasket = async (product, action) => {
+    if (userId) fetchBasket();
+  }, [userId]);
+
+  const productKey = product.Id;
+  const productInCart = counts[productKey];
+
+  // API yuboruvchi funksiya
+  const apiUpdate = async (body) => {
     try {
-      const res = await axios.post("https://605638c33f72.ngrok-free.app/api/basket/update", {
-        userId: 339299758, // bu vaqtincha hardcoded, keyin Telegram initData'dan olasan
-        productId: product.Id,
-        measureId: product.measures[0]?.Id,
-        action,
-        price: product.prices[0]?.price,
-      });
+      const res = await axios.post("https://67725c21a812.ngrok-free.app/api/basket/update", body);
+      return res.data;
+    } catch (err) {
+      console.error("API error", err.response?.data || err.message);
+      throw err;
+    }
+  };
 
-      if (res.data.ok) {
-        setCounts((prev) => {
-          const existing = prev[product.Id];
+  // plus/minus tugmalari uchun
+  const handleAction = async (action) => {
+    const body = {
+      userId: String(userId),
+      productId: String(product.Id),
+      measureId: String(product.measures?.[0]?.Id || ""),
+      action,
+      price: Number(product.prices?.[0]?.price || 0),
+      productName: product.name, // ✅ qo‘shildi
+      productImage: product.imageUrl, // ✅ qo‘shildi
+    };
 
+    try {
+      const data = await apiUpdate(body);
+      if (data.ok) {
+        setCounts(prev => {
+          const existing = prev[productKey];
           if (action === "plus") {
             return {
               ...prev,
-              [product.Id]: {
-                ...product,
-                count: existing ? existing.count + 1 : 1,
-              },
+              [productKey]: { ...product, count: existing ? existing.count + 1 : 1 }
             };
-          }
-
-          if (action === "minus") {
+          } else {
             if (existing && existing.count > 1) {
-              return {
-                ...prev,
-                [product.Id]: {
-                  ...product,
-                  count: existing.count - 1,
-                },
-              };
+              return { ...prev, [productKey]: { ...product, count: existing.count - 1 } };
             } else {
               const updated = { ...prev };
-              delete updated[product.Id];
+              delete updated[productKey];
               return updated;
             }
           }
-
-          return prev;
         });
       }
     } catch (err) {
-      console.error("Basket update error:", err);
+      console.error(err);
+    }
+  };
+
+  // input orqali aniq sonni kiritish
+  const handleSetQuantity = async (value) => {
+    const qty = Number(value);
+    if (Number.isNaN(qty) || qty < 0) return;
+
+    const body = {
+      userId: String(userId),
+      productId: String(product.Id),
+      measureId: String(product.measures?.[0]?.Id || ""),
+      quantity: qty,
+      price: Number(product.prices?.[0]?.price || 0),
+      productName: product.name, // ✅ qo‘shildi
+      productImage: product.imageUrl, // ✅ qo‘shildi
+    };
+
+    try {
+      const data = await apiUpdate(body);
+      if (data.ok) {
+        setCounts(prev => {
+          const updated = { ...prev };
+          if (qty <= 0) {
+            delete updated[productKey];
+            return updated;
+          }
+          updated[productKey] = { ...product, count: qty };
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <div
-      key={product.Id}
-      className="flex flex-col content-center justify-between border rounded-lg overflow-hidden"
-    >
+    <div key={productKey} className="flex flex-col justify-between border rounded-lg overflow-hidden p-2">
       <div>
         <img
           src={product.imageUrl || "/src/assets/no-photo.jpg"}
           alt={product.name}
-          className="w-full h-44 sm:w-44 sm:h-44 lg:w-48 lg:h-48 object-cover"
+          className="w-full h-44 object-cover"
         />
-        <h3 className="text-base font-semibold p-2">{product.name}</h3>
+        <h3 className="text-base font-semibold mt-2">{product.name}</h3>
       </div>
 
       <div className="p-2">
         <p className="text-lg font-bold">
-          {product.prices[0]?.price} {product.prices[0]?.currencyname}
+          {product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
         </p>
 
         {productInCart ? (
-          <div className="flex justify-between items-center bg-[rgb(22,113,98)] text-white py-1 rounded mt-1 w-full text-xl">
-            <button onClick={() => updateBasket(product, "minus")} className="px-3">
-              −
-            </button>
-            <span>{productInCart.count}</span>
-            <button onClick={() => updateBasket(product, "plus")} className="px-3">
-              +
-            </button>
+          <div className="flex items-center gap-2 mt-2">
+            <button onClick={() => handleAction("minus")} className="px-3 py-1 bg-gray-200 rounded">−</button>
+
+            <input
+              type="number"
+              min="0"
+              value={productInCart.count}
+              onChange={(e) => {
+                const v = e.target.value;
+                setCounts(prev => ({ ...prev, [productKey]: { ...product, count: Number(v) } }));
+              }}
+              onBlur={(e) => handleSetQuantity(e.target.value)}
+              className="w-20 text-center border rounded py-1"
+            />
+
+            <button onClick={() => handleAction("plus")} className="px-3 py-1 bg-gray-200 rounded">+</button>
           </div>
         ) : (
           <button
-            onClick={() => updateBasket(product, "plus")}
-            className=" bg-[rgb(22,113,98)] text-white py-1 rounded mt-1 w-full text-xl"
+            onClick={() => handleAction("plus")}
+            className="mt-2 w-full bg-[rgb(22,113,98)] text-white py-2 rounded"
           >
-            +
+            + Savatchaga qo'shish
           </button>
         )}
       </div>

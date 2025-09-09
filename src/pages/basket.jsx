@@ -2,50 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { BsBagHeart } from "react-icons/bs";
 import { PiWarningCircle } from "react-icons/pi";
 import { Link } from 'react-router-dom';
+import useBasket from '../hooks/useBasket';
 
 const Basket = () => {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const userId = 1147407714;
   const [showModal, setShowModal] = useState(false);
   const [basketItems, setBasketItems] = useState([]);
+  const { basket, loading, error } = useBasket(tgUser?.id || userId);
 
-  useEffect(() => {
-    const storedItems = sessionStorage.getItem("basketCounts");
-
-    if (storedItems) {
-      try {
-        const parsedItems = JSON.parse(storedItems);
-        const itemsArray = Array.isArray(parsedItems) ? parsedItems : Object.values(parsedItems);
-        setBasketItems(itemsArray);
-      } catch (err) {
-        console.error("JSON parse error:", err);
-        setBasketItems([]);
-      }
-    }
-  }, []);
-  const handleIncrement = (index) => {
-    const updatedItems = [...basketItems];
-    updatedItems[index].count += 1;
-    setBasketItems(updatedItems);
-    sessionStorage.setItem("basketCounts", JSON.stringify(updatedItems));
-  };
-
-  const handleDecrement = (index) => {
-    const updatedItems = [...basketItems];
-
-    if (updatedItems[index].count > 1) {
-      updatedItems[index].count -= 1;
-    } else {
-      updatedItems.splice(index, 1);
-    }
-
-    setBasketItems(updatedItems);
-    sessionStorage.setItem("basketCounts", JSON.stringify(updatedItems));
-  };
-
+  if (loading) return <p>Yuklanmoqda...</p>;
+  if (error) return <p>Xatolik: {error}</p>;
   return (
     <div className='px-3 xl:px-10 mt-24'>
       <h2 className='text-3xl font-bold'>Savat</h2>
 
-      {basketItems.length === 0 ? (
+      {basket.length === 0 ? (
         <div>
           <div className='max-w-xl mx-auto py-20 bg-gray-300 dark:bg-transparent rounded-lg flex flex-col items-center mt-5 md:hidden'>
             <BsBagHeart className='text-5xl text-[rgb(22,113,98)] mb-3' />
@@ -58,7 +30,7 @@ const Basket = () => {
         </div>
       ) : (
         <div className='mt-5 space-y-4 grid md:grid-cols-2 items-center md:space-y-0 gap-3 lg:grid-cols-3 xl:grid-cols-4'>
-          {basketItems.map((item, index) => (
+          {basket.map((item, index) => (
             <div
               key={item.id || index}
               className="flex max-w-md items-center gap-4 bg-white rounded-xl shadow-md p-2 border"
@@ -74,24 +46,11 @@ const Basket = () => {
                 <div className='flex items-end justify-between'>
                   <div>
                     <p className="text-xl font-bold mt-1 dark:text-black">
-                      ${(item.price * item.count).toLocaleString()}
+                      ${item.price  }
                     </p>
-                    <p className="text-gray-500 mt-1 text-sm">Miqdori: {item.count}</p>
+                    <p className="text-gray-500 mt-1 text-sm">Miqdori: {item.quantity}</p>
                   </div>
-                  <div className="flex items-center bg-slate-100 rounded-lg px-2">
-                    <button
-                      className="text-xl px-2 dark:text-black"
-                      onClick={() => handleDecrement(index)}
-                    >
-                      −
-                    </button>
-                    <button
-                      className="text-xl px-2 dark:text-black"
-                      onClick={() => handleIncrement(index)}
-                    >
-                      +
-                    </button>
-                  </div>
+
                 </div>
               </div>
             </div>
