@@ -3,12 +3,10 @@ import axios from "axios";
 
 const Card = ({ product, userId }) => {
   const [counts, setCounts] = useState({});
-
-  // komponent mount bo'lganda backenddan hozirgi basketni olib kelish
   useEffect(() => {
     const fetchBasket = async () => {
       try {
-        const res = await axios.get(`https://67725c21a812.ngrok-free.app/api/basket/${userId}`);
+        const res = await axios.get(`telegram-web-app-backend.laravel.cloud/api/basket/${userId}`);
         if (res.data.ok) {
           const snapshot = {};
           res.data.basket.forEach(i => {
@@ -33,7 +31,7 @@ const Card = ({ product, userId }) => {
   // API yuboruvchi funksiya
   const apiUpdate = async (body) => {
     try {
-      const res = await axios.post("https://67725c21a812.ngrok-free.app/api/basket/update", body);
+      const res = await axios.post("telegram-web-app-backend.laravel.cloud/api/basket/update", body);
       return res.data;
     } catch (err) {
       console.error("API error", err.response?.data || err.message);
@@ -43,14 +41,16 @@ const Card = ({ product, userId }) => {
 
   // plus/minus tugmalari uchun
   const handleAction = async (action) => {
+    console.log(product.measures[0]?.Id);
+    
     const body = {
-      userId: String(userId),
-      productId: String(product.Id),
-      measureId: String(product.measures?.[0]?.Id || ""),
+      user_id: String(userId),
+      product_id: String(product.Id),
+      measure_id: String(product.measures[0]?.Id || ""),
       action,
       price: Number(product.prices?.[0]?.price || 0),
-      productName: product.name, // ✅ qo‘shildi
-      productImage: product.imageUrl, // ✅ qo‘shildi
+      name: product.name, // ✅ qo‘shildi
+      image: product.imageUrl, // ✅ qo‘shildi
     };
 
     try {
@@ -85,13 +85,13 @@ const Card = ({ product, userId }) => {
     if (Number.isNaN(qty) || qty < 0) return;
 
     const body = {
-      userId: String(userId),
-      productId: String(product.Id),
-      measureId: String(product.measures?.[0]?.Id || ""),
+      user_id: String(userId),
+      product_id: String(product.Id),
+      measure_id: String(product.measures[0]?.Id || ""),
       quantity: qty,
       price: Number(product.prices?.[0]?.price || 0),
-      productName: product.name, // ✅ qo‘shildi
-      productImage: product.imageUrl, // ✅ qo‘shildi
+      name: product.name, // ✅ qo‘shildi
+      image: product.imageUrl, // ✅ qo‘shildi
     };
 
     try {
