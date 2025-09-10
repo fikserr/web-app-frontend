@@ -5,7 +5,7 @@ const useBasket = (userId) => {
   const [basket, setBasket] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
   useEffect(() => {
     if (!userId) {
       setLoading(false);
@@ -15,9 +15,9 @@ const useBasket = (userId) => {
     const fetchBasket = async () => {
       try {
         console.log("Fetching basket for userId:", userId);
-        
+
         const response = await axios.get(
-          `https://telegram-web-app-backend.laravel.cloud/api/basket/${userId}`,
+          `${API_URL}/api/basket/${userId}`,
           {
             headers: {
               'Accept': 'application/json',

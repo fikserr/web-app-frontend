@@ -10,13 +10,14 @@ const App = () => {
   const shouldHideBar = hideBarRoutes.some((path) =>
     location.pathname.startsWith(path)
   );
+    const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
   useEffect(() => {
     const tgInitData = window.Telegram?.WebApp?.initData; // signed string
     // const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
 
     if (tgInitData) {
-      axios.post("https://67725c21a812.ngrok-free.app/api/telegram/check", { initData: tgInitData })
+      axios.post("${API_URL}/api/telegram/check", { initData: tgInitData })
         .then(res => {
           console.log(res.data);
         })

@@ -5,11 +5,13 @@ export default function useCategories(page = 1, pageSize = 10) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
+  console.log(API_URL);
+  
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`https://telegram-web-app-backend.laravel.cloud/api/categories`, {
+      .get(`${API_URL}/api/categories`, {
         params: { page, pageSize },
       })
       .then((res) => {

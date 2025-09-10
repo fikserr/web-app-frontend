@@ -3,10 +3,11 @@ import axios from "axios";
 
 const Card = ({ product, userId }) => {
   const [counts, setCounts] = useState({});
+    const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
   useEffect(() => {
     const fetchBasket = async () => {
       try {
-        const res = await axios.get(`https://telegram-web-app-backend.laravel.cloud/api/basket/${userId}`);
+        const res = await axios.get(`${API_URL}/api/basket/${userId}`);
         if (res.data.ok) {
           const snapshot = {};
           res.data.basket.forEach(i => {
@@ -31,7 +32,7 @@ const Card = ({ product, userId }) => {
   // API yuboruvchi funksiya
   const apiUpdate = async (body) => {
     try {
-      const res = await axios.post("https://telegram-web-app-backend.laravel.cloud/api/basket/update", body);
+      const res = await axios.post("{API_URL}/api/basket/update", body);
       return res.data;
     } catch (err) {
       console.error("API error", err.response?.data || err.message);
