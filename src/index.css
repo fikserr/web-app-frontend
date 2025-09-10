@@ -4,10 +4,33 @@
 
 /* Light mode (default) */
 body {
-    @apply bg-gray-100 text-gray-900 transition-colors duration-300;
+  @apply bg-gray-100 text-gray-900 transition-colors duration-300;
+}
+
+/* Dark mode */
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+@layer base {
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
-  
-  /* Dark mode */
-  .dark body {
-    @apply bg-gray-900 text-gray-100;
+
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
+
+  input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+.swiper {
+  position: relative !important;
+  z-index: 0 !important;
+}

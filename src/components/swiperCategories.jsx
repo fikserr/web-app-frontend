@@ -4,6 +4,7 @@ import "swiper/css";
 const CategorySwiper = ({ categories, handleCategoryClick }) => {
   return (
     <Swiper
+      className="!z-0"
       spaceBetween={16} // slide orasidagi masofa
       slidesPerView={2} // mobil uchun 2 ta
       breakpoints={{
@@ -32,7 +33,7 @@ const CategorySwiper = ({ categories, handleCategoryClick }) => {
                 className="w-25 h-25 object-contain"
               />
             </div>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium z-0">
               {cat.name.length > 20 ? cat.name.slice(0, 30) + "..." : cat.name}
             </p>
           </div>

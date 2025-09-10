@@ -17,7 +17,7 @@ const useBasket = (userId) => {
         console.log("Fetching basket for userId:", userId);
 
         const response = await axios.get(
-          `${API_URL}api/basket/${userId}`,
+          `${API_URL}/api/basket/${userId}`,
           {
             headers: {
               'Accept': 'application/json',

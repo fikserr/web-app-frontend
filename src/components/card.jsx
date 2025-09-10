@@ -51,7 +51,7 @@ const Card = ({ product, userId }) => {
       action,
       price: Number(product.prices?.[0]?.price || 0),
       name: product.name, // ✅ qo‘shildi
-      image: product.imageUrl, // ✅ qo‘shildi
+      image: product.imageUrl || null, // ✅ qo‘shildi
     };
 
     try {
@@ -92,7 +92,7 @@ const Card = ({ product, userId }) => {
       quantity: qty,
       price: Number(product.prices?.[0]?.price || 0),
       name: product.name, // ✅ qo‘shildi
-      image: product.imageUrl, // ✅ qo‘shildi
+      image: product.imageUrl || null, // ✅ qo‘shildi
     };
 
     try {
@@ -115,23 +115,23 @@ const Card = ({ product, userId }) => {
 
   return (
     <div key={productKey} className="flex flex-col justify-between border rounded-lg overflow-hidden p-2">
-      <div>
+      <div className="">
         <img
           src={product.imageUrl || "/src/assets/no-photo.jpg"}
           alt={product.name}
-          className="w-full h-44 object-cover"
+          className="w-full h-36 object-cover rounded-xl"
         />
-        <h3 className="text-base font-semibold mt-2">{product.name}</h3>
+        <h3 className="text-sm font-semibold mt-2">{product.name}</h3>
       </div>
 
-      <div className="p-2">
-        <p className="text-lg font-bold">
+      <div className="pt-2">
+        <p className="text-xs font-bold">
           {product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
         </p>
 
         {productInCart ? (
-          <div className="flex items-center gap-2 mt-2">
-            <button onClick={() => handleAction("minus")} className="px-3 py-1 bg-gray-200 rounded">−</button>
+          <div className="flex justify-between items-center gap-2 mt-2">
+            <button onClick={() => handleAction("minus")} className="px-3 py-1 bg-[rgb(22,113,98)] rounded text-base text-white">−</button>
 
             <input
               type="number"
@@ -142,18 +142,16 @@ const Card = ({ product, userId }) => {
                 setCounts(prev => ({ ...prev, [productKey]: { ...product, count: Number(v) } }));
               }}
               onBlur={(e) => handleSetQuantity(e.target.value)}
-              className="w-20 text-center border rounded py-1"
+              className="w-16 text-center border rounded py-1"
             />
 
-            <button onClick={() => handleAction("plus")} className="px-3 py-1 bg-gray-200 rounded">+</button>
+            <button onClick={() => handleAction("plus")} className="px-3 py-1 bg-[rgb(22,113,98)] rounded  text-white">+</button>
           </div>
         ) : (
-          <button
-            onClick={() => handleAction("plus")}
-            className="mt-2 w-full bg-[rgb(22,113,98)] text-white py-2 rounded"
-          >
-            + Savatchaga qo'shish
-          </button>
+          <div className="flex justify-end">
+            
+            <button onClick={() => handleAction("plus")} className="px-3 py-1 mt-2 bg-[rgb(22,113,98)] py-1 rounded text-white">+</button>
+          </div>
         )}
       </div>
     </div>
