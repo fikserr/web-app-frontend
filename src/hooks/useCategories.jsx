@@ -11,7 +11,7 @@ export default function useCategories(page = 1, pageSize = 10) {
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`https://2b91a32cf9c4.ngrok-free.app/api/categories`, {
+      .get(`https://f67ca9476725.ngrok-free.appapi/categories`, {
         params: { page, pageSize },
       })
       .then((res) => {

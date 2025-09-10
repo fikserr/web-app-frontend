@@ -17,7 +17,7 @@ const useBasket = (userId) => {
         console.log("Fetching basket for userId:", userId);
 
         const response = await axios.get(
-          `https://2b91a32cf9c4.ngrok-free.app/api/basket/${userId}`,
+          `https://f67ca9476725.ngrok-free.appapi/basket/${userId}`,
           {
             headers: {
               'Accept': 'application/json',
