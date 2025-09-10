@@ -7,7 +7,7 @@ import useOrder from '../hooks/useOrder';
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const [showModal, setShowModal] = useState(false);
-  const { basket, loading, error } = useBasket(339299758);
+  const { basket, loading, error } = useBasket(String(tgUser?.id)); // Foydalanuvchi ID sini stringga aylantirish
 
   // ✅ order hook
   const { createOrder, loading: orderLoading, error: orderError } = useOrder();
@@ -17,7 +17,7 @@ const Basket = () => {
 
   const handleConfirmOrder = async () => {
     const orderData = {
-      userId: String(tgUser?.id || 339299758),
+      userId: String(tgUser?.id),
       UUID: crypto.randomUUID(),
       date: new Date().toISOString(),
       comment: "ixtiyoriy",
