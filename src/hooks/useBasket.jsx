@@ -17,7 +17,7 @@ const useBasket = (userId) => {
         console.log("Fetching basket for userId:", userId);
         
         const response = await axios.get(
-          `telegram-web-app-backend.laravel.cloud/api/basket/${userId}`,
+          `https://telegram-web-app-backend.laravel.cloud/api/basket/${userId}`,
           {
             headers: {
               'Accept': 'application/json',

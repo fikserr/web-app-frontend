@@ -6,10 +6,9 @@ import useBasket from '../hooks/useBasket';
 
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  const userId = 1147407714;
   const [showModal, setShowModal] = useState(false);
   const [basketItems, setBasketItems] = useState([]);
-  const { basket, loading, error } = useBasket(tgUser?.id || userId);
+  const { basket, loading, error } = useBasket(tgUser?.id);
 
   if (loading) return <p>Yuklanmoqda...</p>;
   if (error) return <p>Xatolik: {error}</p>;

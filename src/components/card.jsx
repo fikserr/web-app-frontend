@@ -6,7 +6,7 @@ const Card = ({ product, userId }) => {
   useEffect(() => {
     const fetchBasket = async () => {
       try {
-        const res = await axios.get(`telegram-web-app-backend.laravel.cloud/api/basket/${userId}`);
+        const res = await axios.get(`https://telegram-web-app-backend.laravel.cloud/api/basket/${userId}`);
         if (res.data.ok) {
           const snapshot = {};
           res.data.basket.forEach(i => {
@@ -31,7 +31,7 @@ const Card = ({ product, userId }) => {
   // API yuboruvchi funksiya
   const apiUpdate = async (body) => {
     try {
-      const res = await axios.post("telegram-web-app-backend.laravel.cloud/api/basket/update", body);
+      const res = await axios.post("https://telegram-web-app-backend.laravel.cloud/api/basket/update", body);
       return res.data;
     } catch (err) {
       console.error("API error", err.response?.data || err.message);
