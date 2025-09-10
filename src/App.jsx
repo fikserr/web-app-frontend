@@ -17,13 +17,12 @@ const App = () => {
 
 
     if (tgInitData) {
-      axios.post("${API_URL}/api/telegram/check", { initData: tgInitData })
+      axios.post(`${API_URL}/api/telegram/check`, { initData: tgInitData })
         .then(res => {
           console.log(res.data);
         })
         .catch(err => {
           console.log(err);
-
         });
     }
   }, []);
