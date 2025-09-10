@@ -7,7 +7,7 @@ const Card = ({ product, userId }) => {
   useEffect(() => {
     const fetchBasket = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/basket/${userId}`);
+        const res = await axios.get(`https://2b91a32cf9c4.ngrok-free.app/api/basket/${userId}`);
         if (res.data.ok) {
           const snapshot = {};
           res.data.basket.forEach(i => {
@@ -32,7 +32,7 @@ const Card = ({ product, userId }) => {
   // API yuboruvchi funksiya
   const apiUpdate = async (body) => {
     try {
-      const res = await axios.post("{API_URL}/api/basket/update", body);
+      const res = await axios.post("https://2b91a32cf9c4.ngrok-free.app/api/basket/update", body);
       return res.data;
     } catch (err) {
       console.error("API error", err.response?.data || err.message);

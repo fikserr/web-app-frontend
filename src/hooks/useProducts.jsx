@@ -12,7 +12,7 @@ const useProducts = (categoryId, page = 1, pageSize = 10) => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("${API_URL}/api/products", {
+        const response = await axios.get("https://2b91a32cf9c4.ngrok-free.app/api/products", {
           params: { categoryId, page, pageSize }, // ✅ dynamic params
         });
         setProducts(response.data);
