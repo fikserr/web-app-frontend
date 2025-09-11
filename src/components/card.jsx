@@ -33,32 +33,6 @@ const Card = ({ product, userId, loading }) => {
   }, [userId])
 
   // Laravel Echo listener (real-time yangilanish uchun)
-  useEffect(() => {
-    if (!window.Echo) return
-
-    const channel = window.Echo.channel("basket-channel")
-
-    channel.listen(".basket.updated", e => {
-      console.log("Basket updated (Echo):", e.basket)
-
-      setCounts(prev => {
-        const updated = { ...prev }
-        if (e.basket.quantity <= 0) {
-          delete updated[e.basket.product_id]
-          return updated
-        }
-        updated[e.basket.product_id] = {
-          ...product,
-          count: e.basket.quantity,
-        }
-        return updated
-      })
-    })
-
-    return () => {
-      channel.stopListening(".basket.updated")
-    }
-  }, [product])
 
   const apiUpdate = async body => {
     try {
