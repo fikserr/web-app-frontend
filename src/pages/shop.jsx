@@ -53,8 +53,6 @@ const Shop = () => {
             Barchasini ko‘rish
           </Link>
         </div>
-
-        {categoriesLoading && <p>Yuklanmoqda...</p>}
         {categoriesError && <p>Xato: {categoriesError}</p>}
         {categories && (
           <CategorySwiper
@@ -67,7 +65,6 @@ const Shop = () => {
         <div className="my-5">
           <h2 className="font-bold text-2xl my-5">Mahsulotlar</h2>
 
-          {productsLoading && <p>Yuklanmoqda...</p>}
           {productsError && <p>Xato: {productsError}</p>}
           {!productsLoading && products.length === 0 && (
             <p>Mahsulot topilmadi</p>
@@ -76,7 +73,7 @@ const Shop = () => {
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
             {products?.data?.map((product) => {
               
-              return <Card key={product.Id} product={product}  userId={tgUser?.id}/>;
+              return <Card key={product.Id} product={product}  userId={339299758} loading={productsLoading}/>;
             })}
           </div>
         </div>

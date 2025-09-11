@@ -1,46 +1,67 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
+import { Swiper, SwiperSlide } from "swiper/react"
+import "swiper/css"
+import { Skeleton } from "./ui/skeleton"
+import { useState, useEffect } from "react"
 
 const CategorySwiper = ({ categories, handleCategoryClick }) => {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (categories?.data) {
+      setLoading(false)
+    }
+  }, [categories])
+
   return (
     <Swiper
       className="!z-0"
-      spaceBetween={16} // slide orasidagi masofa
-      slidesPerView={2} // mobil uchun 2 ta
+      spaceBetween={16}
+      slidesPerView={2}
       breakpoints={{
-        640: { slidesPerView: 4 }, // sm ekran
-        768: { slidesPerView: 6 }, // md ekran
+        640: { slidesPerView: 4 },
+        768: { slidesPerView: 6 },
       }}
     >
-      {categories?.data?.map((cat, index) => (
-        <SwiperSlide key={index}>
-          <div
-            onClick={() => handleCategoryClick(cat.Id)}
-            className={`cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${
-              cat.active
-                ? "text-[rgb(22,113,98)]"
-                : "text-gray-800 dark:text-white"
-            }`}
-          >
-            <div
-              className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 shadow-md overflow-hidden ${
-                cat.active ? "bg-[rgb(22,113,98)]" : "bg-gray-100"
-              }`}
-            >
-              <img
-                src={cat.image || "/src/assets/no-photo.jpg"}
-                alt={cat.name}
-                className="w-25 h-25 object-contain"
-              />
-            </div>
-            <p className="text-sm font-medium z-0">
-              {cat.name.length > 20 ? cat.name.slice(0, 30) + "..." : cat.name}
-            </p>
-          </div>
-        </SwiperSlide>
-      ))}
+      {loading
+        ? // ✅ Skeleton slides chiqadi
+          Array.from({ length: 6 }).map((_, i) => (
+            <SwiperSlide key={i}>
+              <div className="flex flex-col items-center justify-center">
+                <Skeleton className="w-24 h-24 rounded-full mb-2" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </SwiperSlide>
+          ))
+        : // ✅ Haqiqiy categorylar chiqadi
+          categories?.data?.map((cat, index) => (
+            <SwiperSlide key={index}>
+              <div
+                onClick={() => handleCategoryClick(cat.Id)}
+                className={`cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${
+                  cat.active
+                    ? "text-[rgb(22,113,98)]"
+                    : "text-gray-800 dark:text-white"
+                }`}
+              >
+                <div
+                  className={`w-24 h-24 rounded-full flex items-center justify-center mb-2 shadow-md overflow-hidden ${
+                    cat.active ? "bg-[rgb(22,113,98)]" : "bg-gray-100"
+                  }`}
+                >
+                  <img
+                    src={cat.image || "/src/assets/no-photo.jpg"}
+                    alt={cat.name}
+                    className="w-25 h-25 object-contain"
+                  />
+                </div>
+                <p className="text-sm font-medium z-0">
+                  {cat.name.length > 20 ? cat.name.slice(0, 30) + "..." : cat.name}
+                </p>
+              </div>
+            </SwiperSlide>
+          ))}
     </Swiper>
-  );
-};
+  )
+}
 
-export default CategorySwiper;
+export default CategorySwiper
