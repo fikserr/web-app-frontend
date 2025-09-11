@@ -154,7 +154,7 @@ const Card = ({ product, userId, loading }) => {
         <Skeleton className="h-[125px] w-[250px] rounded-xl" />
       ) : (
         <img
-          src={product.imageUrl || "/src/assets/no-photo.jpg"}
+          src={product.imageUrl || "../assets/no-photo.jpg"}
           alt={product.name}
           className="w-full h-36 object-cover rounded-xl"
         />

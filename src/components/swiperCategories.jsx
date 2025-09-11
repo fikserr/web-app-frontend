@@ -49,7 +49,7 @@ const CategorySwiper = ({ categories, handleCategoryClick }) => {
                   }`}
                 >
                   <img
-                    src={cat.image || "/src/assets/no-photo.jpg"}
+                    src={cat.image || "../assets/no-photo.jpg"}
                     alt={cat.name}
                     className="w-25 h-25 object-contain"
                   />
