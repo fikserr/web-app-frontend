@@ -34,12 +34,12 @@ const Header = () => {
                 <img src={Logo} alt="Logo" className="h-10 dark:shadow-md dark:shadow-white " />
 
                 {/* Toggle button */}
-                <button
+                {/* <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                     className="p-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition"
                 >
                     {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
+                </button> */}
             </div>
         </div>
     );
