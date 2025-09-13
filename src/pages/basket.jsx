@@ -41,7 +41,7 @@ const Basket = () => {
   };
 
   return (
-    <div className='px-3 xl:px-10 mt-24'>
+    <div className='px-3 xl:px-10 py-24'>
       <h2 className='text-3xl font-bold'>Savat</h2>
 
       {basket.length === 0 ? (

@@ -10,7 +10,7 @@ const App = () => {
   const shouldHideBar = hideBarRoutes.some((path) =>
     location.pathname.startsWith(path)
   );
-    const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
+  const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
   useEffect(() => {
     const tgInitData = window.Telegram?.WebApp?.initData; // signed string
     // const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -31,7 +31,7 @@ const App = () => {
   return (
     <div className="min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <Header />
-      <main className="pb-16">
+      <main className="">
         <Outlet />
 
       </main>

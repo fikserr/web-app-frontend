@@ -15,7 +15,7 @@ const useProducts = (categoryId, page = 1, pageSize = 10) => {
         const response = await axios.get(`${API_URL}/api/products`, {
           params: { categoryId, page, pageSize }, // ✅ dynamic params
         });
-        setProducts(response.data);
+        setProducts(response.data.data || []);
       } catch (err) {
         setError(err.message || "Xatolik yuz berdi");
       } finally {

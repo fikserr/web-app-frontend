@@ -5,9 +5,10 @@ import useCategories from "../hooks/useCategories";
 import CategorySwiper from "../components/swiperCategories";
 import useProducts from "../hooks/useProducts";
 import Card from "../components/card";
+import useAddBasket from "../hooks/useAddBasket";
 
 const Shop = () => {
- const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const {
     categories,
     loading: categoriesLoading,
@@ -19,19 +20,15 @@ const Shop = () => {
     loading: productsLoading,
     error: productsError,
   } = useProducts(selectedCategory, 1, 4);
-
-  console.log(selectedCategory);
+  const { counts, updateQuantity } = useAddBasket(339299758);
+  console.log(counts, updateQuantity);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
 
-  // Basketga qo'shish
-
-  console.log(products);
-
   return (
-    <div className="px-2 mb-16 xl:px-10 mt-24">
+    <div className="py-24 px-2 mb-16 xl:px-10">
       {/* Search Input */}
       <div className="flex items-center md:max-w-lg border justify-between p-2 rounded-xl px-5 mb-6">
         <input
@@ -58,6 +55,7 @@ const Shop = () => {
           <CategorySwiper
             categories={categories}
             handleCategoryClick={handleCategoryClick}
+            loading={categoriesLoading}
           />
         )}
 
@@ -67,15 +65,25 @@ const Shop = () => {
 
           {productsError && <p>Xato: {productsError}</p>}
           {!productsLoading && products.length === 0 && (
-            <p>Mahsulot topilmadi</p>
+            <div className="flex justify-center w-full my-20"><p className="text-center font-semibold text-base w-60">Mahsulotni Ko'rish uchun Kategoriyani Tanlang !</p></div>
           )}
           {/* <p>{tgUser.id}</p> */}
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-            {products?.data?.map((product) => {
-              
-              return <Card key={product.Id} product={product}  userId={tgUser?.id} loading={productsLoading}/>;
-            })}
+            {productsLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} loading={true} />
+              ))
+              : Array.isArray(products) && products.map((p) => (
+                <Card
+                  key={p.Id}
+                  product={p}
+                  productInCart={counts[p.Id]}
+                  onUpdate={updateQuantity}
+                  loading={false}
+                />
+              ))}
           </div>
+
         </div>
       </div>
     </div>

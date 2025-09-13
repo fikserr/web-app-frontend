@@ -3,7 +3,7 @@ import iphone from '../assets/reportImg.png'
 
 const Report = () => {
   return (
-    <div className='px-2 xl:px-10 mt-24'>
+    <div className='px-2 xl:px-10 py-24'>
       <h1 className='font-bold text-4xl'>Hisobot</h1>
       <div className='bg-slate-100 p-3 rounded-lg max-w-sm my-10'>
         <div className='bg-slate-300 p-2 rounded-lg flex items-center gap-5 my-5'>
