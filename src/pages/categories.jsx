@@ -30,7 +30,7 @@ const Categories = () => {
   if (loading) return <p>Yuklanmoqda...</p>;
   if (error) return <p>Xato: {error}</p>;
   console.log(categories);
-  
+
   return (
     <div className="px-2 mb-40 mt-24">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -50,12 +50,14 @@ const Categories = () => {
               }`}
             >
               <img
-                src={c.image || "/src/assets/no-photo.jpg"}
+                src={c.imageUrl || "/src/assets/no-photo.jpg"}
                 alt={c.title}
                 className="w-25 h-25 object-contain"
               />
             </div>
-            <p className="text-sm font-medium">{c.name}</p>
+            <p className="text-sm font-medium">
+              {c.name.length > 20 ? c.name.slice(0, 20) + "..." : c.name}
+            </p>
           </div>
         ))}
       </div>

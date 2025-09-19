@@ -7,7 +7,7 @@ import useOrder from '../hooks/useOrder';
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const [showModal, setShowModal] = useState(false);
-  const { basket, loading, error } = useBasket(String(tgUser?.id)); // Foydalanuvchi ID sini stringga aylantirish
+  const { basket, loading, error } = useBasket(String(339299758)); // Foydalanuvchi ID sini stringga aylantirish
 
   // ✅ order hook
   const { createOrder, loading: orderLoading, error: orderError } = useOrder();
@@ -56,7 +56,7 @@ const Basket = () => {
           </div>
         </div>
       ) : (
-        <div className='mt-5 space-y-0 grid md:grid-cols-2 items-center md:space-y-0 gap-3 lg:grid-cols-3 xl:grid-cols-4'>
+        <div className='mt-5 mb-10 space-y-0 grid md:grid-cols-2 items-center md:space-y-0 gap-3 lg:grid-cols-3 xl:grid-cols-4'>
           {basket.map((item, index) => (
             <div
               key={item.id || index}
