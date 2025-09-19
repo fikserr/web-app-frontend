@@ -40,9 +40,9 @@ const CategorySwiper = ({ categories, handleCategoryClick, loading }) => {
                   }`}
               >
                 <img
-                  src={cat?.image || NoImage}
+                  src={cat?.imageUrl || NoImage}
                   alt={cat.name}
-                  className="w-25 h-25 object-contain"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
               <p className="text-sm font-medium z-0">
