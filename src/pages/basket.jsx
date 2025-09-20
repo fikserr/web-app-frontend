@@ -17,7 +17,7 @@ const Basket = () => {
 
   const handleConfirmOrder = async () => {
     const orderData = {
-      userId: String(tgUser?.id),
+      userId: String(339299758),
       UUID: crypto.randomUUID(),
       date: new Date().toISOString(),
       comment: "ixtiyoriy",
@@ -39,7 +39,8 @@ const Basket = () => {
       alert("Buyurtma yuborishda xatolik yuz berdi!");
     }
   };
-
+  console.log(basket);
+  
   return (
     <div className='px-3 xl:px-10 py-24'>
       <h2 className='text-3xl font-bold'>Savat</h2>

@@ -11,12 +11,15 @@ export default function useOrder() {
     setError(null);
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/orders`,
+        `${import.meta.env.VITE_API_BASE_URL}/orders`,
         orderData
       );
+     
+      
       setResponse(res.data);
       return res.data;
     } catch (err) {
+       console.log(orderData);
       setError(err.response?.data || err.message);
       throw err;
     } finally {
