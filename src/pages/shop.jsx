@@ -25,7 +25,8 @@ const Shop = () => {
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
-
+  console.log(categories);
+  
   return (
     <div className="py-24 px-2 mb-16 xl:px-10">
       {/* Search Input */}
