@@ -7,7 +7,7 @@ import useOrder from '../hooks/useOrder';
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const [showModal, setShowModal] = useState(false);
-  const { basket, loading, error } = useBasket(String(339299758)); // Foydalanuvchi ID sini stringga aylantirish
+  const { basket, loading, error } = useBasket(String(tgUser?.id)); // Foydalanuvchi ID sini stringga aylantirish
 
   // ✅ order hook
   const { createOrder, loading: orderLoading, error: orderError } = useOrder();
@@ -17,9 +17,9 @@ const Basket = () => {
 
   const handleConfirmOrder = async () => {
     const orderData = {
-      userId: String(339299758),
+      userId: String(tgUser?.id),
       UUID: crypto.randomUUID(),
-      date: new Date().toISOString(),
+      date: new Date().toISOString().slice(0, 19),
       comment: "ixtiyoriy",
       basket: basket.map(item => ({
         productId: item.product_id,
@@ -39,8 +39,7 @@ const Basket = () => {
       alert("Buyurtma yuborishda xatolik yuz berdi!");
     }
   };
-  console.log(basket);
-  
+
   return (
     <div className='px-3 xl:px-10 py-24'>
       <h2 className='text-3xl font-bold'>Savat</h2>

@@ -16,6 +16,7 @@ const useAddBasket = (userId) => {
           const snapshot = {}
           res.data.basket.forEach(i => {
             snapshot[i.product_id] = {
+              measureId: i.measure_id,
               productId: i.product_id,
               count: i.quantity,
               name: i.name,
@@ -60,7 +61,7 @@ const useAddBasket = (userId) => {
       const body = {
         user_id: String(userId),
         product_id: String(productId),
-        measure_id: String(product.measures?.[0]?.Id || ""),
+        measure_id: String(product.measures?.[0]?.Id),
         quantity: qty,
         price: Number(product.prices?.[0]?.price || 0),
         name: product.name,
