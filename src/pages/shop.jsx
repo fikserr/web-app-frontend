@@ -21,7 +21,6 @@ const Shop = () => {
     error: productsError,
   } = useProducts(selectedCategory, 1, 4);
   const { counts, updateQuantity } = useAddBasket(tgUser?.id);
-  console.log(counts, updateQuantity);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
@@ -65,25 +64,29 @@ const Shop = () => {
 
           {productsError && <p>Xato: {productsError}</p>}
           {!productsLoading && products.length === 0 && (
-            <div className="flex justify-center w-full my-20"><p className="text-center font-semibold text-base w-60">Mahsulotni Ko'rish uchun Kategoriyani Tanlang !</p></div>
+            <div className="flex justify-center w-full my-20">
+              <p className="text-center font-semibold text-base w-60">
+                Mahsulotni Ko'rish uchun Kategoriyani Tanlang !
+              </p>
+            </div>
           )}
           {/* <p>{tgUser.id}</p> */}
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
             {productsLoading
               ? Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} loading={true} />
-              ))
-              : Array.isArray(products) && products.map((p) => (
-                <Card
-                  key={p.Id}
-                  product={p}
-                  productInCart={counts[p.Id]}
-                  onUpdate={updateQuantity}
-                  loading={false}
-                />
-              ))}
+                  <Card key={i} loading={true} />
+                ))
+              : Array.isArray(products) &&
+                products.map((p) => (
+                  <Card
+                    key={p.Id}
+                    product={p}
+                    productInCart={counts[p.Id]}
+                    onUpdate={updateQuantity}
+                    loading={false}
+                  />
+                ))}
           </div>
-
         </div>
       </div>
     </div>

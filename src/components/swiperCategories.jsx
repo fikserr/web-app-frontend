@@ -9,7 +9,7 @@ const CategorySwiper = ({ categories, handleCategoryClick, loading }) => {
     <Swiper
       className="!z-0"
       spaceBetween={16}
-      slidesPerView={2}
+      slidesPerView={2.5}
       breakpoints={{
         640: { slidesPerView: 4 },
         768: { slidesPerView: 6 },
