@@ -20,12 +20,14 @@ const Shop = () => {
     loading: productsLoading,
     error: productsError,
   } = useProducts(selectedCategory, 1, 4);
-  const { counts, updateQuantity } = useAddBasket(tgUser?.id);
+  const { counts, updateQuantity } = useAddBasket(339299758);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
-  console.log(categories);
+  console.log(counts);
+  console.log(products);
+  
   
   return (
     <div className="py-24 px-2 mb-16 xl:px-10">

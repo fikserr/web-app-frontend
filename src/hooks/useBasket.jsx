@@ -14,8 +14,6 @@ const useBasket = (userId) => {
 
     const fetchBasket = async () => {
       try {
-        console.log("Fetching basket for userId:", userId);
-
         const response = await axios.get(
           `${API_URL}/api/basket/${userId}`,
           {
@@ -23,11 +21,9 @@ const useBasket = (userId) => {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
             },
-            timeout: 10000
+            timeout: 3000, // 3 soniya
           }
         );
-
-        console.log("Response data:", response.data.basket);
 
         if (response.data.ok) {
           setBasket(response.data.basket); // data.basket ni olish kerak

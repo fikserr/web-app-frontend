@@ -17,7 +17,8 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
       </div>
     )
   }
-
+  console.log(productInCart);
+  
   return (
     <div className="flex flex-col justify-between border rounded-lg overflow-hidden p-2">
       <img
