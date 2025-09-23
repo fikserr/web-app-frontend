@@ -20,7 +20,7 @@ const Shop = () => {
     loading: productsLoading,
     error: productsError,
   } = useProducts(selectedCategory, 1, 4);
-  const { counts, updateQuantity } = useAddBasket(339299758);
+  const { counts, updateQuantity } = useAddBasket(tgUser?.id);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);

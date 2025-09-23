@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const [showModal, setShowModal] = useState(false);
-  const { basket, loading, error } = useBasket(String(339299758)); // Foydalanuvchi ID sini stringga aylantirish
+  const { basket, loading, error } = useBasket(String(tgUser?.id)); // Foydalanuvchi ID sini stringga aylantirish
   const tzOffset = 5 * 60; // UTC+5 → 5 soat
   const localDate = new Date(Date.now() + tzOffset * 60 * 1000);
   const { counts, updateQuantity } = useAddBasket(tgUser?.id);

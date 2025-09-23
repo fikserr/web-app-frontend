@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import useOrderList from "../hooks/useOrderList";
 
-const OrderList = ({ userId }) => {
+const OrderList = () => {
   const [page, setPage] = useState(1);
   const pageSize = 5;
-
-  const { orders, loading, error, meta } = useOrderList(339299758, page, pageSize);
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const { orders, loading, error, meta } = useOrderList(
+    tgUser?.id,
+    page,
+    pageSize
+  );
   const [expandedOrders, setExpandedOrders] = useState({});
 
   const toggleProducts = (orderId) => {
