@@ -8,6 +8,7 @@ import Report from '../pages/report'
 import Categories from '../pages/categories'
 import Detail from '../pages/detail'
 import Formalize from '../pages/formalize'
+import OrdersPage from '../pages/orderList';
 
 const Router = () => {
     const router = createBrowserRouter(
@@ -20,6 +21,7 @@ const Router = () => {
                 <Route path='/categories' element={<Categories/>}/>
                 <Route path='/detail' element={<Detail/>}/>
                 <Route path='/formalize' element={<Formalize/>}/>
+                <Route path='/orderList' element={<OrdersPage/>}/>
             </Route>
         )
     );

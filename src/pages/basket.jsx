@@ -50,7 +50,7 @@ const Basket = () => {
     <div className="px-3 xl:px-10 py-24">
       <div className="flex items-end justify-between "> 
         <h2 className="text-3xl font-bold">Savat</h2>
-        <Link to={"/shop"} className="text-base font-bold bg-[rgb(22,113,98)] text-white px-2 py-1 rounded">
+        <Link to={"/orderList"} className="text-base font-bold bg-[rgb(22,113,98)] text-white px-2 py-1 rounded">
           Buyurtmalarim
         </Link>
       </div>
