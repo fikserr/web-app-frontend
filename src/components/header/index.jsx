@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react"; // ikonalar
-import Logo from '../../assets/logo.png' // logo
+import { Moon, Sun } from "lucide-react"; 
+import Logo from '../../assets/logo.png' 
 
 const Header = () => {
     const tg = window.Telegram.WebApp;
