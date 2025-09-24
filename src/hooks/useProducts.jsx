@@ -1,32 +1,53 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-const useProducts = (categoryId, page = 1, pageSize = 10) => {
+export default function useProducts({
+  page = 1,
+  pageSize = 10,
+  userId,
+  categoryId,
+}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti 
-  useEffect(() => {
-    if (!categoryId) return; // kategoriya tanlanmasa hech narsa chaqirmaydi
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    const fetchProducts = async () => {
+  // 🔑 Login parolni .env dan olamiz
+  const USERNAME = import.meta.env.VITE_API_USERNAME;
+  const PASSWORD = import.meta.env.VITE_API_PASSWORD;
+
+  const fetchProducts = useCallback(
+    async (signal) => {
+      if (!userId || !categoryId) return; // ❌ keraksiz requestni to‘xtatamiz
       setLoading(true);
       try {
-        const response = await axios.get(`${API_URL}/api/products`, {
-          params: { categoryId, page, pageSize }, // ✅ dynamic params
+        const res = await axios.get(`${API_BASE_URL}/product`, {
+          params: { page, pageSize, userId, categoryId },
+          signal,
+          auth: {
+            username: USERNAME,
+            password: PASSWORD,
+          },
         });
-        setProducts(response.data.data || []);
+        setProducts(res.data?.data || []);
+        setError(null);
       } catch (err) {
-        setError(err.message || "Xatolik yuz berdi");
+        if (err.name !== "CanceledError") {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [API_BASE_URL, USERNAME, PASSWORD, page, pageSize, userId, categoryId]
+  );
 
-    fetchProducts();
-  }, [categoryId, page, pageSize]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchProducts(controller.signal);
+
+    return () => controller.abort(); // ✅ eski requestni to‘xtatish
+  }, [fetchProducts]);
 
   return { products, loading, error };
-};
-
-export default useProducts;
+}

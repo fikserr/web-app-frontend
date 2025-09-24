@@ -26,7 +26,7 @@ const CategorySwiper = ({ categories, handleCategoryClick, loading }) => {
           </SwiperSlide>
         ))
         : // ✅ Haqiqiy categorylar chiqadi
-        categories?.data?.map((cat, index) => (
+        categories?.map((cat, index) => (
           <SwiperSlide key={index}>
             <div
               onClick={() => handleCategoryClick(cat.Id)}

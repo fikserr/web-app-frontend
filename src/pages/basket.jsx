@@ -9,27 +9,26 @@ import { Link } from "react-router-dom";
 const Basket = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const [showModal, setShowModal] = useState(false);
-  const { basket, loading, error } = useBasket(String(tgUser?.id)); // Foydalanuvchi ID sini stringga aylantirish
   const tzOffset = 5 * 60; // UTC+5 → 5 soat
   const localDate = new Date(Date.now() + tzOffset * 60 * 1000);
-  const { counts, updateQuantity } = useAddBasket(tgUser?.id);
+  const { basket, clearBasket } = useBasket(); // ✅ endi userId kerak emas
+  const { counts, updateQuantity } = useAddBasket();
   const formatted = localDate.toISOString().slice(0, 19);
   // ✅ order hook
   const { createOrder, loading: orderLoading, error: orderError } = useOrder();
 
-  if (loading) return <p>Yuklanmoqda...</p>;
-  if (error) return <p>Xatolik: {error}</p>;
-
   const handleConfirmOrder = async () => {
+    if (!basket.length) return;
+
     const orderData = {
-      userId: String(tgUser?.id),
+      userId: String(339299758),
       UUID: crypto.randomUUID(),
       date: formatted,
       comment: "ixtiyoriy",
       basket: basket.map((item) => ({
-        productId: item.product_id,
-        measureId: item.measure_id,
-        quantity: item.quantity,
+        productId: item.Id,
+        measureId: item.measures?.[0]?.Id,
+        quantity: counts[item.Id]?.count || 0, // ✅ miqdor counts'dan olinadi
         price: item.price,
       })),
     };
@@ -37,8 +36,10 @@ const Basket = () => {
     try {
       const res = await createOrder(orderData);
       console.log("✅ Buyurtma yuborildi:", res);
+      clearBasket(); // ✅ savatni tozalash
       alert("Buyurtmangiz qabul qilindi!");
       setShowModal(false);
+      localStorage.removeItem("basket"); // ✅ savatni tozalash
       window.location.reload();
     } catch (err) {
       console.error("❌ Buyurtma xatolik:", err);
@@ -48,9 +49,12 @@ const Basket = () => {
 
   return (
     <div className="px-3 xl:px-10 py-24">
-      <div className="flex items-end justify-between "> 
+      <div className="flex items-end justify-between ">
         <h2 className="text-3xl font-bold">Savat</h2>
-        <Link to={"/orderList"} className="text-base font-bold bg-[rgb(22,113,98)] text-white px-2 py-1 rounded">
+        <Link
+          to={"/orderList"}
+          className="text-base font-bold bg-[rgb(22,113,98)] text-white px-2 py-1 rounded"
+        >
           Buyurtmalarim
         </Link>
       </div>
@@ -71,7 +75,7 @@ const Basket = () => {
           {basket.map((item) => {
             return (
               <div
-                key={item.product_id}
+                key={item.productId}
                 className="flex max-w-md items-center gap-4 bg-white rounded-xl shadow-md px-2 py-2 border"
               >
                 <div className="rounded-xl h-full w-24">
@@ -96,7 +100,7 @@ const Basket = () => {
                             onClick={() =>
                               updateQuantity(
                                 item,
-                                counts[item.product_id].count - 1
+                                (counts[item.productId]?.count || 0) - 1
                               )
                             }
                             className="px-2 bg-[rgb(22,113,98)] rounded text-base text-white"
@@ -107,7 +111,7 @@ const Basket = () => {
                             onClick={() =>
                               updateQuantity(
                                 item,
-                                counts[item.product_id].count + 1
+                                (counts[item.productId]?.count || 0) + 1
                               )
                             }
                             className="px-2 bg-[rgb(22,113,98)] rounded text-white"
@@ -118,11 +122,11 @@ const Basket = () => {
                       </div>
                       <div className="flex justify-between w-full">
                         <p className="text-gray-500 mt-1 text-sm">
-                          Miqdori: {counts[item.product_id]?.count || 0}
+                          Miqdori: {counts[item.productId]?.count || 0}
                         </p>
                         <p className="text-gray-500 mt-1 text-sm">
                           Summa:{" "}
-                          {(counts[item.product_id]?.count || 0) * item.price}
+                          {(counts[item.productId]?.count || 0) * item.price}
                         </p>
                       </div>
                     </div>

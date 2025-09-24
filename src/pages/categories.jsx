@@ -3,7 +3,12 @@ import { Link } from "react-router-dom";
 import useCategories from "../hooks/useCategories";
 
 const Categories = () => {
-  const { categories, loading, error } = useCategories();
+  const {
+    categories,
+    meta,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories(1147407714, 1, 10);
   const [cat, setCat] = useState([]); // faqat bitta state
 
   // Kategoriyalar kelganda active qo‘shamiz
@@ -34,7 +39,7 @@ const Categories = () => {
   return (
     <div className="px-2 mb-40 mt-24">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {categories.data.map((c, index) => (
+        {categories.map((c, index) => (
           <div
             key={index}
             onClick={() => handleCategoryClick(index)}

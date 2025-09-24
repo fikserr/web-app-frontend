@@ -1,6 +1,6 @@
-import React from "react"
-import NoImage from "../assets/no-photo.jpg"
-import { Skeleton } from "./ui/skeleton"
+import React from "react";
+import NoImage from "../assets/no-photo.jpg";
+import { Skeleton } from "./ui/skeleton";
 
 const Card = ({ product, productInCart, onUpdate, loading }) => {
   if (loading) {
@@ -15,10 +15,9 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
           <Skeleton className="h-4 w-1/3" />
         </div>
       </div>
-    )
+    );
   }
-  console.log(productInCart);
-  
+
   return (
     <div className="flex flex-col justify-between border rounded-lg overflow-hidden p-2">
       <img
@@ -72,7 +71,7 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Card
+export default Card;

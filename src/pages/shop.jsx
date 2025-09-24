@@ -11,24 +11,28 @@ const Shop = () => {
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const {
     categories,
+    meta,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories();
+  } = useCategories(1147407714, 1, 10);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const {
     products,
     loading: productsLoading,
     error: productsError,
-  } = useProducts(selectedCategory, 1, 4);
+  } = useProducts({
+    page: 1,
+    pageSize: 4,
+    userId: 1147407714,
+    categoryId: selectedCategory,
+  });
+
   const { counts, updateQuantity } = useAddBasket(tgUser?.id);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
-  console.log(counts);
-  console.log(products);
-  
-  
+
   return (
     <div className="py-24 px-2 mb-16 xl:px-10">
       {/* Search Input */}
@@ -84,7 +88,7 @@ const Shop = () => {
                   <Card
                     key={p.Id}
                     product={p}
-                    productInCart={counts[p.Id]}
+                    productInCart={counts[p.Id]} // ✅ localStorage’dan o‘qilyapti
                     onUpdate={updateQuantity}
                     loading={false}
                   />

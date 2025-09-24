@@ -1,47 +1,40 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 
-const useBasket = (userId) => {
+const STORAGE_KEY = "basket_counts";
+
+const useBasket = () => {
   const [basket, setBasket] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL; // ✅ env-dan olyapti
+
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchBasket = async () => {
-      try {
-        const response = await axios.get(
-          `${API_URL}/api/basket/${userId}`,
-          {
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            timeout: 3000, // 3 soniya
-          }
-        );
-
-        if (response.data.ok) {
-          setBasket(response.data.basket); // data.basket ni olish kerak
-        } else {
-          setError("Savatni olishda xatolik");
+    const getBasket = () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setBasket(Object.values(parsed)); // object → array
+        } catch (e) {
+          console.error("❌ Basket parse error:", e);
+          setBasket([]);
         }
-      } catch (err) {
-        console.error("Error fetching basket:", err);
-        setError(err.response?.data?.message || err.message || "Server xatosi");
-      } finally {
-        setLoading(false);
+      } else {
+        setBasket([]);
       }
     };
 
-    fetchBasket();
-  }, [userId]);
+    getBasket();
 
-  return { basket, loading, error, setBasket };
+    // localStorage o‘zgarishini kuzatish
+    window.addEventListener("storage", getBasket);
+    return () => window.removeEventListener("storage", getBasket);
+  }, []);
+
+  // ✅ Basketni tozalash funksiyasi
+  const clearBasket = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setBasket([]);
+  };
+
+  return { basket, setBasket, clearBasket };
 };
 
 export default useBasket;
