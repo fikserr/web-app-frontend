@@ -40,7 +40,6 @@ const Basket = () => {
       alert("Buyurtmangiz qabul qilindi!");
       setShowModal(false);
       localStorage.removeItem("basket"); // ✅ savatni tozalash
-      window.location.reload();
     } catch (err) {
       console.error("❌ Buyurtma xatolik:", err);
       alert("Buyurtma yuborishda xatolik yuz berdi!");
