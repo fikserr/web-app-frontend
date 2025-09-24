@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 const Report = () => {
-  const { balance, loading, error } = useBalance(339299758);
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  const { balance, loading, error } = useBalance(tgUser?.id);
   const [dateRange, setDateRange] = useState({
     from: null,
     to: null,
@@ -29,7 +30,7 @@ const Report = () => {
     loading: aktLoading,
     error: aktError,
   } = useAktSverka(
-    339299758,
+    tgUser?.id,
     showAkt && dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : null,
     showAkt && dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : null
   );

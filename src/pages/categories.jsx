@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import useCategories from "../hooks/useCategories";
 
 const Categories = () => {
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const {
     categories,
     meta,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories(1147407714, 1, 10);
+  } = useCategories(tgUser?.id, 1, 10);
   const [cat, setCat] = useState([]); // faqat bitta state
 
   // Kategoriyalar kelganda active qo‘shamiz

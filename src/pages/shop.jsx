@@ -14,7 +14,7 @@ const Shop = () => {
     meta,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories(1147407714, 1, 10);
+  } = useCategories(tgUser?.id, 1, 10);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const {
     products,
@@ -23,7 +23,7 @@ const Shop = () => {
   } = useProducts({
     page: 1,
     pageSize: 4,
-    userId: 1147407714,
+    userId: tgUser?.id,
     categoryId: selectedCategory,
   });
 

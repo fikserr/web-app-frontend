@@ -21,7 +21,7 @@ const Basket = () => {
     if (!basket.length) return;
 
     const orderData = {
-      userId: String(339299758),
+      userId: String(tgUser?.id), // Telegram user ID yoki "unknown"
       UUID: crypto.randomUUID(),
       date: formatted,
       comment: "ixtiyoriy",
