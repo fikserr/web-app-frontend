@@ -14,7 +14,7 @@ const Shop = () => {
     meta,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories(tgUser?.id, 1, 10);
+  } = useCategories(tgUser?.Id, 1, 10);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const {
     products,
@@ -23,11 +23,11 @@ const Shop = () => {
   } = useProducts({
     page: 1,
     pageSize: 4,
-    userId: tgUser?.id,
+    userId: tgUser?.Id,
     categoryId: selectedCategory,
   });
 
-  const { counts, updateQuantity } = useAddBasket(tgUser?.id);
+  const { counts, updateQuantity } = useAddBasket(tgUser?.Id);
   // Kategoriya tanlash
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);

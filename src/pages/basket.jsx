@@ -4,6 +4,8 @@ import { PiWarningCircle } from "react-icons/pi";
 import useBasket from "../hooks/useBasket";
 import useOrder from "../hooks/useOrder";
 import useAddBasket from "../hooks/useAddBasket";
+import toast, { Toaster } from "react-hot-toast";
+// import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
 
 const Basket = () => {
@@ -11,8 +13,9 @@ const Basket = () => {
   const [showModal, setShowModal] = useState(false);
   const tzOffset = 5 * 60; // UTC+5 → 5 soat
   const localDate = new Date(Date.now() + tzOffset * 60 * 1000);
-  const { basket, clearBasket } = useBasket(); // ✅ endi userId kerak emas
+  const { basket, setBasket, clearBasket } = useBasket(); // ✅ endi userId kerak emas
   const { counts, updateQuantity } = useAddBasket();
+  // const { toast } = useToast();
   const formatted = localDate.toISOString().slice(0, 19);
   // ✅ order hook
   const { createOrder, loading: orderLoading, error: orderError } = useOrder();
@@ -36,13 +39,15 @@ const Basket = () => {
     try {
       const res = await createOrder(orderData);
       console.log("✅ Buyurtma yuborildi:", res);
-      clearBasket(); // ✅ savatni tozalash
-      alert("Buyurtmangiz qabul qilindi!");
+    
+      clearBasket();
+      localStorage.removeItem("basket");
       setShowModal(false);
-      localStorage.removeItem("basket"); // ✅ savatni tozalash
+    
+      toast.success("✅ Buyurtmangiz muvaffaqiyatli qabul qilindi!");
     } catch (err) {
       console.error("❌ Buyurtma xatolik:", err);
-      alert("Buyurtma yuborishda xatolik yuz berdi!");
+      toast.error("❌ Buyurtma yuborishda xatolik yuz berdi!");
     }
   };
 
@@ -96,12 +101,28 @@ const Basket = () => {
                         </p>
                         <div className="flex justify-between items-center gap-2 mt-2">
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                item,
-                                (counts[item.productId]?.count || 0) - 1
-                              )
-                            }
+                            onClick={() => {
+                              const newCount = (counts[item.productId]?.count || 0) - 1;
+
+                              if (newCount <= 0) {
+                                // ❌ Faqat shu itemni o‘chirish
+                                const updatedBasket = basket.filter(
+                                  (b) => b.productId !== item.productId
+                                );
+
+                                // localStorage ham yangilanishi kerak
+                                localStorage.setItem("basket_counts", JSON.stringify(updatedBasket));
+
+                                // hookdagi basketni yangilash
+                                setBasket(updatedBasket);
+
+                                // counts ham 0 qilib qo‘yiladi
+                                updateQuantity(item, 0);
+                              } else {
+                                // ✅ oddiy miqdorni kamaytirish
+                                updateQuantity(item, newCount);
+                              }
+                            }}
                             className="px-2 bg-[rgb(22,113,98)] rounded text-base text-white"
                           >
                             −
@@ -177,6 +198,7 @@ const Basket = () => {
           ❌ Buyurtma xatolik: {String(orderError)}
         </p>
       )}
+      <Toaster position="top-center" reverseOrder={false} />
     </div>
   );
 };
