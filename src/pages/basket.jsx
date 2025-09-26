@@ -39,11 +39,11 @@ const Basket = () => {
     try {
       const res = await createOrder(orderData);
       console.log("✅ Buyurtma yuborildi:", res);
-    
+
       clearBasket();
       localStorage.removeItem("basket");
       setShowModal(false);
-    
+
       toast.success("✅ Buyurtmangiz muvaffaqiyatli qabul qilindi!");
     } catch (err) {
       console.error("❌ Buyurtma xatolik:", err);
@@ -53,15 +53,15 @@ const Basket = () => {
 
   return (
     <div className="px-3 xl:px-10 py-24">
-      <div className="flex items-end justify-between ">
-        <h2 className="text-3xl font-bold">Savat</h2>
+      <h2 className="text-3xl font-bold">Savat</h2>
+      {/* <div className="flex items-end justify-between ">
         <Link
           to={"/orderList"}
           className="text-base font-bold bg-[rgb(22,113,98)] text-white px-2 py-1 rounded"
         >
           Buyurtmalarim
         </Link>
-      </div>
+      </div> */}
 
       {basket.length === 0 ? (
         <div>
@@ -105,21 +105,13 @@ const Basket = () => {
                               const newCount = (counts[item.productId]?.count || 0) - 1;
 
                               if (newCount <= 0) {
-                                // ❌ Faqat shu itemni o‘chirish
                                 const updatedBasket = basket.filter(
                                   (b) => b.productId !== item.productId
                                 );
-
-                                // localStorage ham yangilanishi kerak
                                 localStorage.setItem("basket_counts", JSON.stringify(updatedBasket));
-
-                                // hookdagi basketni yangilash
                                 setBasket(updatedBasket);
-
-                                // counts ham 0 qilib qo‘yiladi
                                 updateQuantity(item, 0);
                               } else {
-                                // ✅ oddiy miqdorni kamaytirish
                                 updateQuantity(item, newCount);
                               }
                             }}

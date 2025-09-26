@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { Link } from "react-router-dom";
 import useCategories from "../hooks/useCategories";
@@ -14,8 +14,9 @@ const Shop = () => {
     meta,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useCategories(tgUser?.Id, 1, 10);
+  } = useCategories(tgUser?.id, 1, 10);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const {
     products,
     loading: productsLoading,
@@ -23,29 +24,42 @@ const Shop = () => {
   } = useProducts({
     page: 1,
     pageSize: 4,
-    userId: tgUser?.Id,
+    userId: tgUser?.id,
     categoryId: selectedCategory,
   });
 
-  const { counts, updateQuantity } = useAddBasket(tgUser?.Id);
-  // Kategoriya tanlash
+  const { counts, updateQuantity } = useAddBasket(tgUser?.id);
+  
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
+  const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    console.log("Products:", products);
+
+    if (!searchTerm.trim()) return products;
+
+    return products.filter((p) => {
+      const name =
+        p?.Name || p?.name || p?.Title || p?.ProductName || "";
+      return name.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [products, searchTerm]);
 
   return (
     <div className="py-24 px-2 mb-16 xl:px-10">
-      {/* Search Input */}
       <div className="flex items-center md:max-w-lg border justify-between p-2 rounded-xl px-5 mb-6">
         <input
           type="text"
           placeholder="Qidiruv..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="text-lg w-full outline-none px-3 bg-transparent text-gray-800 placeholder-gray-500 focus:border-[rgb(22,113,98)] focus:ring-0 focus:outline-none dark:text-white"
         />
         <IoMdSearch className="text-2xl" />
       </div>
 
-      {/* Kategoriyalar */}
+      
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Kategoriyalar</h2>
@@ -65,7 +79,6 @@ const Shop = () => {
           />
         )}
 
-        {/* Mahsulotlar */}
         <div className="my-5">
           <h2 className="font-bold text-2xl my-5">Mahsulotlar</h2>
 
@@ -77,22 +90,21 @@ const Shop = () => {
               </p>
             </div>
           )}
-          {/* <p>{tgUser.id}</p> */}
+          
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
             {productsLoading
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} loading={true} />
-                ))
-              : Array.isArray(products) &&
-                products.map((p) => (
-                  <Card
-                    key={p.Id}
-                    product={p}
-                    productInCart={counts[p.Id]} // ✅ localStorage’dan o‘qilyapti
-                    onUpdate={updateQuantity}
-                    loading={false}
-                  />
-                ))}
+                <Card key={i} loading={true} />
+              ))
+              : filteredProducts.map((p) => (
+                <Card
+                  key={p.Id}
+                  product={p}
+                  productInCart={counts[p.Id]}
+                  onUpdate={updateQuantity}
+                  loading={false}
+                />
+              ))}
           </div>
         </div>
       </div>
