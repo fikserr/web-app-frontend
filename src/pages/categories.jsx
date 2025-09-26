@@ -33,8 +33,8 @@ const Categories = () => {
     );
   };
 
-  if (loading) return <p>Yuklanmoqda...</p>;
-  if (error) return <p>Xato: {error}</p>;
+  // if (loading) return <p>Yuklanmoqda...</p>;
+  // if (error) return <p>Xato: {error}</p>;
   console.log(categories);
 
   return (

@@ -34,6 +34,7 @@ const useBasket = () => {
     setBasket([]);
   };
 
+  // ⬅️ Shu yerda qaytarasiz
   return { basket, setBasket, clearBasket };
 };
 

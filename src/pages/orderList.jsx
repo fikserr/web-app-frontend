@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import useOrderList from "../hooks/useOrderList";
+import { FaCaretDown, FaCaretUp } from "react-icons/fa6";
+import NoImage from "../assets/no-photo.jpg";
 
 const OrderList = () => {
   const [page, setPage] = useState(1);
@@ -22,6 +24,7 @@ const OrderList = () => {
   if (loading) return <p>Yuklanmoqda...</p>;
   if (error) return <p className="text-red-500">Xatolik: {error}</p>;
 
+  // console.log(orders, "productInCart");
   return (
     <div className="my-20">
       {orders.map((order) => (
@@ -39,9 +42,9 @@ const OrderList = () => {
             </div>
             <button
               onClick={() => toggleProducts(order.Id)}
-              className="px-3 py-1 rounded bg-blue-600 text-white text-sm"
+              className="px-2 py-2 rounded text-xl"
             >
-              {expandedOrders[order.Id] ? "Yopish" : "Tovarlarni ko‘rish"}
+              {expandedOrders[order.Id] ? <FaCaretUp /> : <FaCaretDown />}
             </button>
           </div>
 
@@ -50,8 +53,16 @@ const OrderList = () => {
               {order.productList.map((product) => (
                 <div
                   key={product.productId}
-                  className="border rounded p-2 bg-gray-50 flex justify-between"
+                  className="border rounded p-2 bg-gray-50 flex items-center gap-3"
                 >
+                  {/* Rasm */}
+                  <img
+                    src={product.imageUrl || NoImage}
+                    alt={product.productName}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+
+                  {/* Ma'lumotlar */}
                   <div>
                     <p className="font-medium">{product.productName}</p>
                     <p className="text-sm text-gray-600">
@@ -59,11 +70,12 @@ const OrderList = () => {
                       {product.currencyName}
                     </p>
                   </div>
-                  <p className="font-semibold">{product.amount} UZS</p>
                 </div>
               ))}
             </div>
           )}
+
+
         </div>
       ))}
 
