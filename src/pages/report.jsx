@@ -33,7 +33,6 @@ const Report = () => {
 		showAkt && dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null,
 		showAkt && dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null
 	)
-	console.log('akt data:', akt)
 
 	if (loading) return <div>Yuklanmoqda...</div>
 	if (error) return <div>Xatolik: {error.message}</div>
