@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { IoMdSearch } from 'react-icons/io'
+import { useNavigate } from 'react-router-dom'
 import Card from '../components/card'
+import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
 import useProducts from '../hooks/useProducts'
 
 const Shop = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-
+	const navigate = useNavigate()
 	const [selectedCategory, setSelectedCategory] = useState(null)
 	const [searchTerm, setSearchTerm] = useState('')
 
@@ -60,15 +62,20 @@ const Shop = () => {
 			<div className='my-5'>
 				{selectedCategory && (
 					<div className='mb-6'>
-						<h2 className='font-bold text-2xl max-h-[64px]'>{selectedCategory.name}</h2>
+						<h2 className='font-bold text-2xl max-h-[64px]'>
+							{selectedCategory.name}
+						</h2>
 					</div>
 				)}
 				{productsError && <p>Xato: {productsError}</p>}
 				{!productsLoading && products.length === 0 && (
-					<div className='flex justify-center w-full my-20'>
-						<p className='text-center font-semibold text-base w-60'>
-							Mahsulotni Ko'rish uchun Kategoriyani Tanlang !
+					<div className='flex flex-col items-center justify-center w-full my-20 gap-4'>
+						<p className='text-center font-semibold text-base w-[260px]'>
+							Bu kategoriyada mahsulotlar yo'q !
 						</p>
+						<Button onClick={() => navigate('/categories')}>
+							Boshqa kategoriyani Tanlash
+						</Button>
 					</div>
 				)}
 
