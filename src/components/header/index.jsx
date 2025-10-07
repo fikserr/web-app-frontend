@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { FiShoppingBag } from 'react-icons/fi'
+import { IoHome } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
 import Logo from '../../assets/Logo.png'
 
@@ -39,12 +39,10 @@ const Header = () => {
 			<div className='my-3 flex items-center justify-between'>
 				<img src={Logo} alt='Logo' className='h-10 dark:shadow-md' />
 				<div className='flex items-center gap-5'>
-					<Link to={'/orderList'}>
-						<FiShoppingBag
-							className='dark:text-gray-400 text-black opacity-80 dark:opacity-100 '
-							style={{ fontSize: '28px' }}
-						/>
+					<Link to={'/home'}>
+						<IoHome style={{ fontSize: '25px' }} />
 					</Link>
+
 					<button
 						onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
 						className='p-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition'

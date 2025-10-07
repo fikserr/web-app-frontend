@@ -19,6 +19,7 @@ import useOrder from '../hooks/useOrder'
 
 const Basket = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 
 	const [showCommentModal, setShowCommentModal] = useState(false)
 	const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -41,7 +42,7 @@ const Basket = () => {
 			userId: String(tgUser?.id),
 			UUID: crypto.randomUUID(),
 			date: formatted,
-			comment: comment?.trim() || 'ixtiyoriy',
+			comment: comment?.trim() || '',
 			basket: basket.map(item => ({
 				productId: item.Id,
 				measureId: item.measures?.[0]?.Id,
@@ -61,7 +62,6 @@ const Basket = () => {
 			toast.success('✅ Buyurtmangiz muvaffaqiyatli qabul qilindi!')
 		} catch (err) {
 			console.error('❌ Buyurtma xatolik:', err)
-			// toast.error('❌ Buyurtma yuborishda xatolik yuz berdi!')
 			setShowErrorModal(true)
 			setShowConfirmModal(false)
 		}
@@ -85,9 +85,11 @@ const Basket = () => {
 
 			{basket.length === 0 ? (
 				<div>
-					<div className='max-w-xl mx-auto py-20 bg-gray-100 rounded-lg flex flex-col items-center mt-5 md:hidden'>
+					<div className='max-w-xl mx-auto py-20 bg-gray-100 rounded-lg flex flex-col items-center mt-5 md:hidden dark:bg-gray-800'>
 						<BsBagHeart className='text-5xl text-[rgb(22,113,98)] mb-3' />
-						<p className='text-lg text-gray-600'>Sizning savatingiz bo'sh.</p>
+						<p className='text-lg text-gray-600 dark:text-gray-200'>
+							Sizning savatingiz bo'sh.
+						</p>
 					</div>
 				</div>
 			) : (
@@ -183,15 +185,15 @@ const Basket = () => {
 			<Dialog open={showCommentModal} onOpenChange={setShowCommentModal}>
 				<DialogContent
 					aria-describedby={undefined}
-					className='bg-white text-black rounded-xl max-w-sm w-10/12'
+					className='bg-white text-black rounded-xl max-w-sm w-10/12 dark:bg-gray-700 dark:text-white'
 				>
 					<DialogHeader>
-						<DialogTitle className='text-center font-semibold text-lg'>
+						<DialogTitle className='text-center font-semibold text-lg dark:text-white'>
 							Buyurtmangiz uchun izoh qoldirasizmi?
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className='mt-3 flex flex-col gap-4  '>
+					<div className='mt-3 flex flex-col gap-4 '>
 						<Textarea
 							placeholder='Izox...'
 							value={comment}
@@ -213,21 +215,20 @@ const Basket = () => {
 					<DialogFooter className='flex justify-between mt-3 flex-row'>
 						<Button
 							variant='outline'
-							className='w-1/2 mr-2'
+							className='w-1/2 mr-2 dark:text-white'
 							onClick={() => {
 								setComment('ixtiyoriy')
 								setShowCommentModal(false)
-								setTimeout(() => setShowConfirmModal(true), 100)
 							}}
 						>
-							Skip
+							Ortga qaytish
 						</Button>
 
 						<Button
 							className='bg-[rgb(22,113,98)] w-1/2 text-white'
 							onClick={() => {
 								setShowCommentModal(false)
-								setTimeout(() => setShowConfirmModal(true), 100)
+								handleConfirmOrder()
 							}}
 						>
 							Tasdiqlash
@@ -235,33 +236,6 @@ const Basket = () => {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-
-			{/* 🟢 Step 2 — Confirm Modal (your old modal) */}
-			{showConfirmModal && (
-				<div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-					<div className='bg-white rounded-lg p-6 w-80 shadow-lg text-center relative'>
-						<PiWarningCircle className='flex justify-center w-full text-4xl text-orange-400' />
-						<h3 className='text-lg font-semibold my-5 mb-14 text-black'>
-							Buyurtmangizni tasdiqlaysizmi?
-						</h3>
-						<div className='flex justify-around mt-4'>
-							<button
-								className='w-1/2 absolute bottom-0 left-0 py-2 border-r-2 border-t-2 text-black'
-								onClick={() => setShowConfirmModal(false)}
-							>
-								Yo‘q
-							</button>
-							<button
-								className='w-1/2 absolute bottom-0 right-0 py-2 border-t-2 text-black'
-								onClick={handleConfirmOrder}
-								disabled={orderLoading}
-							>
-								{orderLoading ? 'Yuborilmoqda...' : 'Ha'}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
 
 			{/* ❌ Error Modal */}
 			{showErrorModal && (

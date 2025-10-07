@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IoMdSearch } from 'react-icons/io'
+import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
+import nothingFound from '../assets/empty.gif'
 import Card from '../components/card'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
@@ -8,6 +9,7 @@ import useProducts from '../hooks/useProducts'
 
 const Shop = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 	const navigate = useNavigate()
 	const [selectedCategory, setSelectedCategory] = useState(null)
 	const [searchTerm, setSearchTerm] = useState('')
@@ -54,7 +56,14 @@ const Shop = () => {
 					onChange={e => setSearchTerm(e.target.value)}
 					className='text-lg w-full outline-none px-3 bg-transparent text-gray-800 placeholder-gray-500 focus:border-[rgb(22,113,98)] focus:ring-0 dark:text-white'
 				/>
-				<IoMdSearch className='text-2xl' />
+				{searchTerm ? (
+					<IoIosCloseCircleOutline
+						className='text-2xl text-red-500 cursor-pointer'
+						onClick={() => setSearchTerm('')}
+					/>
+				) : (
+					<IoMdSearch className='text-2xl' />
+				)}
 			</div>
 
 			{/* ✅ Tanlangan kategoriya nomi chiqadi */}
@@ -68,32 +77,48 @@ const Shop = () => {
 					</div>
 				)}
 				{productsError && <p>Xato: {productsError}</p>}
-				{!productsLoading && products.length === 0 && (
-					<div className='flex flex-col items-center justify-center w-full my-20 gap-4'>
-						<p className='text-center font-semibold text-base w-[260px]'>
-							Bu kategoriyada mahsulotlar yo'q !
-						</p>
-						<Button onClick={() => navigate('/categories')}>
-							Boshqa kategoriyani Tanlash
-						</Button>
-					</div>
-				)}
+				{!productsLoading &&
+					searchTerm.length <= 0 &&
+					products.length === 0 && (
+						<div className='flex flex-col items-center justify-center w-full my-20 gap-4'>
+							<p className='text-center font-semibold text-base w-[260px]'>
+								Bu kategoriyada mahsulotlar yo'q !
+							</p>
+							<Button onClick={() => navigate('/')}>
+								Boshqa kategoriyani Tanlash
+							</Button>
+						</div>
+					)}
 
-				<div className='grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4'>
-					{productsLoading
-						? Array.from({ length: 6 }).map((_, i) => (
-								<Card key={i} loading={true} />
-						  ))
-						: filteredProducts.map(p => (
-								<Card
-									key={p.Id}
-									product={p}
-									productInCart={counts[p.Id]}
-									onUpdate={updateQuantity}
-									loading={false}
-								/>
-						  ))}
-				</div>
+				{filteredProducts.length > 0 ? (
+					<div className='grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4'>
+						{productsLoading
+							? Array.from({ length: 6 }).map((_, i) => (
+									<Card key={i} loading={true} />
+							  ))
+							: filteredProducts.map(p => (
+									<Card
+										key={p.Id}
+										product={p}
+										productInCart={counts[p.Id]}
+										onUpdate={updateQuantity}
+										loading={false}
+									/>
+							  ))}
+					</div>
+				) : (
+					searchTerm && (
+						<div className='w-full h-[400px] flex flex-col gap-0 items-center justify-center'>
+							<img src={nothingFound} />
+							<h2 className='text-3xl font-semibold mb-2'>
+								Hech nima topilmadi
+							</h2>
+							<p className='text-lg text-center font-medium text-gray-600'>
+								Qidiruv so'zini o'zgartirib <br /> ko'ring
+							</p>
+						</div>
+					)
+				)}
 			</div>
 		</div>
 	)

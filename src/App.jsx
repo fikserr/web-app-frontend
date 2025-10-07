@@ -4,7 +4,7 @@ import Header from './components/header'
 
 const App = () => {
 	const location = useLocation()
-	const hideBarRoutes = ['/detail', '/categories']
+	const hideBarRoutes = ['/detail',]
 	const shouldHideBar = hideBarRoutes.some(path =>
 		location.pathname.startsWith(path)
 	)
