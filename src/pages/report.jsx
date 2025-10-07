@@ -14,6 +14,7 @@ import { format } from 'date-fns'
 
 const Report = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 	const { balance, loading, error } = useBalance(tgUser?.id)
 	const [dateRange, setDateRange] = useState({
 		from: null,

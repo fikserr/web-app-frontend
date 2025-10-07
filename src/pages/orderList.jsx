@@ -1,11 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa6'
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from '../components/ui/pagination'
 import useOrderList from '../hooks/useOrderList'
 
 const OrderList = () => {
 	const [page, setPage] = useState(1)
 	const pageSize = 5
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 
 	const { orders, loading, error, meta } = useOrderList(
 		tgUser?.id,
@@ -20,6 +30,10 @@ const OrderList = () => {
 			[orderId]: !prev[orderId],
 		}))
 	}
+
+	useEffect(() => {
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}, [page])
 
 	if (loading) return <p>Yuklanmoqda...</p>
 	if (error) return <p className='text-red-500'>Xatolik: {error}</p>
@@ -57,9 +71,8 @@ const OrderList = () => {
 									key={product.productId}
 									className='border rounded p-2 bg-gray-50 flex items-center gap-3 dark:bg-gray-700'
 								>
-									{/* Ma'lumotlar */}
 									<div>
-										<p className='font-medium h-[50px] max-h-[50px] '>
+										<p className='font-medium h-[50px] max-h-[50px]'>
 											{product.productName}
 										</p>
 										<p className='text-sm text-gray-600 dark:text-gray-300'>
@@ -74,28 +87,62 @@ const OrderList = () => {
 				</div>
 			))}
 
-			{/* Pagination */}
-			{/* <div className='flex justify-between items-center mt-4'>
-				<button
-					disabled={page === 1}
-					onClick={() => setPage(p => Math.max(1, p - 1))}
-					className='px-3 py-1 rounded bg-gray-200 disabled:opacity-50'
-				>
-					◀ Oldingi
-				</button>
+			{/* Pagination (Shadcn UI) */}
+			<div className='flex justify-center mt-6'>
+				<Pagination>
+					<PaginationContent>
+						{/* Oldingi tugma */}
+						<PaginationItem>
+							<PaginationPrevious
+								href='#'
+								onClick={e => {
+									e.preventDefault()
+									setPage(prev => Math.max(1, prev - 1))
+								}}
+								className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+							/>
+						</PaginationItem>
 
-				<p className='text-sm'>
-					Sahifa {meta.currentPage} / {meta.lastPage} ({meta.total} ta order)
-				</p>
+						{Array.from(
+							{ length: Math.max(0, Number(meta?.lastPage) || 0) },
+							(_, i) => i + 1
+						).map(pageNumber => (
+							<PaginationItem key={pageNumber}>
+								<PaginationLink
+									href='#'
+									isActive={pageNumber === (meta?.currentPage || page)}
+									onClick={e => {
+										e.preventDefault()
+										setPage(pageNumber)
+									}}
+								>
+									{pageNumber}
+								</PaginationLink>
+							</PaginationItem>
+						))}
 
-				<button
-					disabled={page === meta.lastPage}
-					onClick={() => setPage(p => Math.min(meta.lastPage, p + 1))}
-					className='px-3 py-1 rounded bg-gray-200 disabled:opacity-50'
-				>
-					Keyingi ▶
-				</button>
-			</div> */}
+						{/* Ellipsis (agar sahifa ko‘p bo‘lsa) */}
+						{meta?.lastPage >= 10 && <PaginationEllipsis />}
+
+						{/* Keyingi tugma */}
+						<PaginationItem>
+							<PaginationNext
+								href='#'
+								onClick={e => {
+									e.preventDefault()
+									const maxPage = Number(meta?.lastPage) || 1
+									setPage(prev => Math.min(maxPage, prev + 1))
+								}}
+								className={
+									page >= (Number(meta?.lastPage) || 1)
+										? 'pointer-events-none opacity-50'
+										: ''
+								}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
+			</div>
 		</div>
 	)
 }
