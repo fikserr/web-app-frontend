@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { ca } from "date-fns/locale/ca";
+// import { ca } from "date-fns/locale/ca";
 
 export default function useCategories(userId, page = 1, pageSize = 10) {
   const [categories, setCategories] = useState([]);
@@ -19,8 +19,8 @@ export default function useCategories(userId, page = 1, pageSize = 10) {
 
     axios
       .get(`${API_BASE_URL}/category`, {
+        auth: { username: USERNAME, password: PASSWORD },
         params: { page, pageSize, userId },
-        auth: { USERNAME, PASSWORD },
       })
       .then((res) => {
         setCategories(res.data?.data || []); // faqat massiv
