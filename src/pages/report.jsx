@@ -146,58 +146,60 @@ const Report = () => {
 						</div>
 					</div>
 
-					{/* List kartalar */}
-					<div className='flex flex-col gap-4 '>
-						{akt.data.list.map((item, idx) => (
-							<div
-								key={idx}
-								className='bg-white rounded shadow p-3 text-sm dark:bg-gray-800'
-							>
-								<div className='font-semibold mb-1 h-10 max-h-10'>
-									{item.document}
+					<div className='flex flex-col gap-4'>
+						{[...akt.data.list]
+							.sort((a, b) => new Date(a.date) - new Date(b.date)) // sort by date DESC (latest first)
+							.map((item, idx) => (
+								<div
+									key={idx}
+									className='bg-white rounded shadow p-3 text-sm dark:bg-gray-800'
+								>
+									<div className='font-semibold mb-1 h-10 max-h-10'>
+										{item.document}
+									</div>
+									<div className='text-xs text-slate-500 mb-2 dark:text-slate-200'>
+										{item.date.slice(0, 10)}
+									</div>
+									{item.comment && (
+										<div className='mb-2 text-slate-600'>{item.comment}</div>
+									)}
+									<div className='grid grid-cols-2 gap-2'>
+										<div className='bg-green-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
+											Menga qarzdor (uzs) :
+											<b className='block font-bold text-lg text-green-700'>
+												{item.ktSum}
+											</b>
+										</div>
+										<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
+											Men qarzdor (uzs) :
+											<b className='block font-bold text-lg text-red-700'>
+												{item.dtSum}
+											</b>
+										</div>
+										<div className='bg-green-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
+											Menga qarzdor ($) :
+											<b className='block font-bold text-lg text-green-700'>
+												{item.ktVal}
+											</b>
+										</div>
+										<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
+											Men qarzdor ($) :
+											<b className='block font-bold text-lg text-red-700'>
+												{item.dtVal}
+											</b>
+										</div>
+										<div>
+											Oxirgi balans (uzs) :
+											<b className='block'>{item.lastSum}</b>
+										</div>
+										<div>
+											Oxirgi balans ($) :<b className='block'>{item.lastVal}</b>
+										</div>
+									</div>
 								</div>
-								<div className='text-xs text-slate-500 mb-2 dark:text-slate-200'>
-									{item.date.slice(0, 10)}
-								</div>
-								{item.comment && (
-									<div className='mb-2 text-slate-600'>{item.comment}</div>
-								)}
-								<div className='grid grid-cols-2 gap-2'>
-									<div className='bg-green-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
-										Menga qarzdor (uzs) :
-										<b className='block font-bold text-lg text-green-700'>
-											{item.ktSum}
-										</b>
-									</div>
-									<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
-										Men qarzdor (uzs) :{' '}
-										<b className='block font-bold text-lg text-red-700'>
-											{item.dtSum}
-										</b>
-									</div>
-									<div className='bg-green-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
-										Menga qarzdor ($) :
-										<b className='block font-bold text-lg text-green-700'>
-											{item.ktVal}
-										</b>
-									</div>
-									<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600 '>
-										Men qarzdor ($) :{' '}
-										<b className='block font-bold text-lg text-red-700'>
-											{item.dtVal}
-										</b>
-									</div>
-									<div>
-										Oxirgi balans (uzs) :{' '}
-										<b className='block'>{item.lastSum}</b>
-									</div>
-									<div>
-										Oxirgi balans ($) : <b className='block'>{item.lastVal}</b>
-									</div>
-								</div>
-							</div>
-						))}
+							))}
 					</div>
+
 					{/* Oxirgi qoldiq */}
 					<div className='bg-white shadow-md rounded-lg p-4 my-4 border dark:bg-gray-800'>
 						<p className='pb-2 font-bold'>

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
-import nothingFound from '../assets/empty.gif'
 import Card from '../components/card'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
 import useProducts from '../hooks/useProducts'
+import nothingFound from '../icons/nothingFound.gif'
 
 const Shop = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
@@ -109,7 +109,7 @@ const Shop = () => {
 				) : (
 					searchTerm && (
 						<div className='w-full h-[400px] flex flex-col gap-0 items-center justify-center'>
-							<img src={nothingFound} />
+							<img src={nothingFound} className='w-[300px]' />
 							<h2 className='text-3xl font-semibold mb-2'>
 								Hech nima topilmadi
 							</h2>
