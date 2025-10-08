@@ -5,8 +5,9 @@ function useBalance(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const username = "Direktor";
-  const password = "1122";
+  const USERNAME = import.meta.env.VITE_API_USERNAME;
+  const PASSWORD = import.meta.env.VITE_API_PASSWORD;
+
 
   useEffect(() => {
     if (!userId) return;
@@ -17,7 +18,7 @@ function useBalance(userId) {
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const authHeader = "Basic " + btoa(`${username}:${password}`);
+    const authHeader = "Basic " + btoa(`${USERNAME}:${PASSWORD}`);
 
     fetch(`${API_BASE_URL}/balance?userId=${userId}`, {
       method: "GET",

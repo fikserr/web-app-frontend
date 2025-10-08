@@ -9,8 +9,8 @@ export default function useCategories(userId, page = 1, pageSize = 10) {
   const [error, setError] = useState(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const username = "Direktor";
-  const password = "1122";
+  const USERNAME = import.meta.env.VITE_API_USERNAME;
+  const PASSWORD = import.meta.env.VITE_API_PASSWORD;
 
   useEffect(() => {
     if (!userId) return;
@@ -20,7 +20,7 @@ export default function useCategories(userId, page = 1, pageSize = 10) {
     axios
       .get(`${API_BASE_URL}/category`, {
         params: { page, pageSize, userId },
-        auth: { username, password },
+        auth: { USERNAME, PASSWORD },
       })
       .then((res) => {
         setCategories(res.data?.data || []); // faqat massiv
