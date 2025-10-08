@@ -22,7 +22,7 @@ const Bar = () => {
 	const linkClass = path =>
 		`flex flex-col items-center ${
 			currentPath === path
-				? 'text-emerald-600 font-semibold'
+				? 'text-emerald-600'
 				: 'text-gray-700 dark:text-gray-400'
 		}`
 

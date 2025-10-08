@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
-import nothingFound from '../assets/empty.gif'
+import nothingFound from '../icons/nothingFound.gif'
 import noImage from '../assets/no-photo.jpg'
 import { Skeleton } from '../components/ui/skeleton'
 import useCategories from '../hooks/useCategories'
 
 const Categories = () => {
-	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	const tgUser = { id: 1284897972 }
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 
 	const {
 		categories,
@@ -114,7 +114,7 @@ const Categories = () => {
 				// 🔹 No Results — only after loading completes
 
 				<div className='w-full h-[400px] flex flex-col gap-0 items-center justify-center'>
-					<img src={nothingFound} />
+					<img src={nothingFound} className='w-[300px]' />
 					<h2 className='text-3xl font-semibold mb-2'>Hech nima topilmadi</h2>
 					<p className='text-lg text-center font-medium text-gray-600'>
 						Qidiruv so'zini o'zgartirib <br /> ko'ring
