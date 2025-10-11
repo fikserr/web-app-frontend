@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa6'
+import { Link } from 'react-router-dom'
+import { Button } from '../components/ui/button'
 import {
 	Pagination,
 	PaginationContent,
@@ -11,14 +13,12 @@ import {
 } from '../components/ui/pagination'
 import useOrderList from '../hooks/useOrderList'
 import nothingFound from '../icons/nothingFound.gif'
-import { Link } from 'react-router-dom'
-import { Button } from '../components/ui/button'
 
 const OrderList = () => {
 	const [page, setPage] = useState(1)
 	const pageSize = 5
-	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	const tgUser = { id: 1284897972 }
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 
 	const { orders, loading, error, meta } = useOrderList(
 		tgUser?.id,
@@ -38,14 +38,21 @@ const OrderList = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}, [page])
 
-	
-
 	if (loading) return <p>Yuklanmoqda...</p>
 	if (error) return <p className='text-red-500'>Xatolik: {error}</p>
 
+	const totalPages = Number(meta?.lastPage) || 1
+
+	// Build visible pages: current, current+1, lastPage
+	const pagesToShow = [page]
+	if (page + 1 <= totalPages) pagesToShow.push(page + 1)
+	if (page + 1 < totalPages - 1) pagesToShow.push('ellipsis')
+	if (totalPages > 1 && !pagesToShow.includes(totalPages))
+		pagesToShow.push(totalPages)
+
 	return (
 		<div className={`${orders.length > 100 ? 'my-0' : 'my-20'} px-3`}>
-			{orders.length > 100 ? (
+			{orders.length > 0 ? (
 				orders.map(order => (
 					<div
 						key={order.Id}
@@ -56,7 +63,7 @@ const OrderList = () => {
 								<p>
 									<strong>№ {order.number}</strong>
 								</p>
-								<p>Summa: {order.totalSum} UZS</p>
+								<p>Summa: {order.totalSum ? order.totalSum : order.totalVal }{order.totalSum ? " UZS" :" USD"} </p>
 								<p>Sana: {new Date(order.date).toLocaleString()}</p>
 								<p className='text-gray-950 dark:text-gray-300'>
 									Status: {order.status}
@@ -96,17 +103,21 @@ const OrderList = () => {
 				<div className='w-full h-screen flex flex-col gap-0 items-center justify-center absolute top-20'>
 					<img src={nothingFound} className='w-[300px]' />
 					<h2 className='text-3xl font-semibold mb-2'>Hech nima topilmadi</h2>
-					<p className='mb-2 text-xl dark:text-gray-400'>Avval mahsulot harid qiling</p>
-					<Link to={"/"}><Button>Kategoriyalar</Button></Link>
+					<p className='mb-2 text-xl dark:text-gray-400'>
+						Avval mahsulot harid qiling
+					</p>
+					<Link to={'/'}>
+						<Button>Kategoriyalar</Button>
+					</Link>
 				</div>
 			)}
 
-			{/* Pagination (Shadcn UI) */}
-			{orders.length > 100 && (
+			{/* Pagination */}
+			{orders.length > 0 && totalPages > 1 && (
 				<div className='flex justify-center mt-6'>
 					<Pagination>
-						<PaginationContent>
-							{/* Oldingi tugma */}
+						<PaginationContent className='flex items-center gap-1'>
+							{/* Previous */}
 							<PaginationItem>
 								<PaginationPrevious
 									href='#'
@@ -118,40 +129,42 @@ const OrderList = () => {
 								/>
 							</PaginationItem>
 
-							{Array.from(
-								{ length: Math.max(0, Number(meta?.lastPage) || 0) },
-								(_, i) => i + 1
-							).map(pageNumber => (
-								<PaginationItem key={pageNumber}>
-									<PaginationLink
-										href='#'
-										isActive={pageNumber === (meta?.currentPage || page)}
-										onClick={e => {
-											e.preventDefault()
-											setPage(pageNumber)
-										}}
-									>
-										{pageNumber}
-									</PaginationLink>
-								</PaginationItem>
-							))}
+							{/* Page Numbers */}
+							{pagesToShow.map((p, index) => {
+								if (p === 'ellipsis') {
+									return (
+										<PaginationItem key={`ellipsis-${index}`}>
+											<PaginationEllipsis />
+										</PaginationItem>
+									)
+								}
 
-							{/* Ellipsis (agar sahifa ko‘p bo‘lsa) */}
-							{meta?.lastPage >= 10 && <PaginationEllipsis />}
+								return (
+									<PaginationItem key={p}>
+										<PaginationLink
+											href='#'
+											isActive={p === page}
+											onClick={e => {
+												e.preventDefault()
+												setPage(p)
+											}}
+										>
+											{p}
+										</PaginationLink>
+									</PaginationItem>
+								)
+							})}
 
-							{/* Keyingi tugma */}
+							{/* Next */}
 							<PaginationItem>
 								<PaginationNext
 									href='#'
 									onClick={e => {
 										e.preventDefault()
-										const maxPage = Number(meta?.lastPage) || 1
-										setPage(prev => Math.min(maxPage, prev + 1))
+										setPage(prev => Math.min(totalPages, prev + 1))
 									}}
 									className={
-										page >= (Number(meta?.lastPage) || 1)
-											? 'pointer-events-none opacity-50'
-											: ''
+										page >= totalPages ? 'pointer-events-none opacity-50' : ''
 									}
 								/>
 							</PaginationItem>
