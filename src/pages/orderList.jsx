@@ -17,8 +17,8 @@ import nothingFound from '../icons/nothingFound.gif'
 const OrderList = () => {
 	const [page, setPage] = useState(1)
 	const pageSize = 5
-	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	const tgUser = { id: 1284897972 }
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
 
 	const { orders, loading, error, meta } = useOrderList(
 		tgUser?.id,

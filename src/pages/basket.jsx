@@ -11,8 +11,8 @@ import useBasket from '../hooks/useBasket'
 import useOrder from '../hooks/useOrder'
 
 const Basket = () => {
-	const tgUser = { id: 1284897972 }
-	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 1284897972 }
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
 	const [showCommentModal, setShowCommentModal] = useState(false)
 	const [showPaymentModal, setShowPaymentModal] = useState(false)
