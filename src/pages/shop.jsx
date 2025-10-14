@@ -8,7 +8,7 @@ import useProducts from '../hooks/useProducts'
 import nothingFound from '../icons/nothingFound.gif'
 
 const Shop = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 	// const tgUser = { id: 1284897972 }
 	const navigate = useNavigate()
 	const [selectedCategory, setSelectedCategory] = useState(null)

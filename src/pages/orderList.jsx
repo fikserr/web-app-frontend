@@ -51,7 +51,7 @@ const OrderList = () => {
 		pagesToShow.push(totalPages)
 
 	return (
-		<div className={`${orders.length > 100 ? 'my-0' : 'my-20'} px-3`}>
+		<div className={`${orders.length >= 10 ? 'my-0' : 'my-20'} px-3`}>
 			{orders.length > 0 ? (
 				orders.map(order => (
 					<div
