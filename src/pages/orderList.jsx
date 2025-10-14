@@ -17,8 +17,8 @@ import nothingFound from '../icons/nothingFound.gif'
 const OrderList = () => {
 	const [page, setPage] = useState(1)
 	const pageSize = 5
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	// const tgUser = { id: 1284897972 }
+	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	const tgUser = { id: 1284897972 }
 
 	const { orders, loading, error, meta } = useOrderList(
 		tgUser?.id,
@@ -51,7 +51,7 @@ const OrderList = () => {
 		pagesToShow.push(totalPages)
 
 	return (
-		<div className={`${orders.length > 100 ? 'my-0' : 'my-20'} px-3`}>
+		<div className={`${orders.length >= 10 ? 'my-0' : 'my-20'} px-3`}>
 			{orders.length > 0 ? (
 				orders.map(order => (
 					<div
