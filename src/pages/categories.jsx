@@ -7,8 +7,8 @@ import { Skeleton } from '../components/ui/skeleton'
 import useCategories from '../hooks/useCategories'
 
 const Categories = () => {
-	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	const tgUser = { id: 339299758 }
+	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	// const tgUser = { id: 339299758 }
 
 	const {
 		categories,
