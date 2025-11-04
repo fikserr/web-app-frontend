@@ -8,7 +8,7 @@ import useCategories from '../hooks/useCategories'
 
 const Categories = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	// const tgUser = { id: 339299758 }
+	// const tgUser = { id: 1284897972 }
 
 	const {
 		categories,
