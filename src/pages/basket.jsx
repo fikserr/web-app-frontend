@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
 import { BsBagHeart } from 'react-icons/bs'
+import { Toaster, toast } from 'sonner'
 import noImage from '../assets/no-photo.jpg'
 import CommentModal from '../components/CommentModal'
 import ErrorModal from '../components/ErrorModal'
@@ -75,15 +75,14 @@ const Basket = () => {
 			setShowPaymentModal(false)
 			setShowCommentModal(false)
 
-			toast.success('✅ Buyurtma qabul qilindi!')
-      console.log('bajarildi');
-      
+			toast.success('Buyurtma qabul qilindi!')
+			// console.log('bajarildi')
 		} catch (err) {
 			console.error('❌ Buyurtma xatolik:', err)
 			setShowErrorModal(true)
 			setShowPaymentModal(false)
 
-			toast.error('❌ Buyurtma yuborishda muammo yuz berdi.')
+			toast.error('Buyurtma yuborishda muammo yuz berdi, qayta urinib ko‘ring')
 		}
 	}
 
@@ -183,7 +182,7 @@ const Basket = () => {
 			{basket.length > 0 && (
 				<button
 					onClick={() => setShowCommentModal(true)}
-					className='bg-[rgb(22,113,98)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0'
+					className='bg-[rgb(22,113,98)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0 '
 				>
 					Buyurtma berish
 				</button>
@@ -208,6 +207,18 @@ const Basket = () => {
 			/>
 
 			{showErrorModal && <ErrorModal setShowErrorModal={setShowErrorModal} />}
+			<Toaster
+				richColors
+				position='top-center'
+				theme='light'
+				toastOptions={{
+					style: {
+						borderRadius: '10px',
+						fontSize: '16px',
+						padding: '15px 20px',
+					},
+				}}
+			/>
 		</div>
 	)
 }

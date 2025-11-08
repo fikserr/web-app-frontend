@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
-import nothingFound from '../icons/nothingFound.gif'
 import noImage from '../assets/no-photo.jpg'
 import { Skeleton } from '../components/ui/skeleton'
 import useCategories from '../hooks/useCategories'
+import nothingFound from '../icons/nothingFound.gif'
 
 const Categories = () => {
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user

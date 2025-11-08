@@ -2,7 +2,7 @@ import { useState } from 'react'
 import NoImage from '../assets/no-photo.jpg'
 import { Skeleton } from './ui/skeleton'
 
-const Card = ({ product, productInCart, onUpdate, loading }) => {
+const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	if (loading) {
@@ -31,13 +31,21 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
 				/>
 
 				<div>
-					<h3 className='text-sm font-semibold mt-2'>{product.name}</h3>
+					<h3
+						className={`h-10 text-sm flex font-semibold mt-2 ${
+							registered ? ' items-center ' : 'items-start'
+						} `}
+					>
+						{product.name}
+					</h3>
 				</div>
 
 				<div className='pt-2'>
-					<p className='text-xs font-bold text-emerald-700'>
-						{product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
-					</p>
+					{registered ? (
+						<p className='text-xs font-bold text-emerald-700'>
+							{product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
+						</p>
+					) : null}
 
 					{productInCart ? (
 						<div className='flex justify-between items-center gap-2 mt-2'>
