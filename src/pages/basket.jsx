@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
 import { BsBagHeart } from 'react-icons/bs'
+import { toast } from 'sonner'
 import noImage from '../assets/no-photo.jpg'
 import CommentModal from '../components/CommentModal'
 import ErrorModal from '../components/ErrorModal'
@@ -63,7 +63,16 @@ const Basket = () => {
 					window.location.href = res.data.paymentUrl // foydalanuvchini Click sahifasiga yo‘naltiramiz
 					return
 				} else {
-					toast.error('⚠️ To‘lov havolasi topilmadi, qayta urinib ko‘ring')
+					toast.error('To‘lov havolasi topilmadi, qayta urinib ko‘ring', {
+						style: {
+							background: '#ef4444',
+							color: '#fff',
+							fontWeight: 'bold',
+							borderRadius: '12px',
+							padding: '16px 24px',
+							fontSize: '16px',
+						},
+					})
 					return
 				}
 			}
@@ -75,15 +84,35 @@ const Basket = () => {
 			setShowPaymentModal(false)
 			setShowCommentModal(false)
 
-			toast.success('✅ Buyurtma qabul qilindi!')
-      console.log('bajarildi');
-      
+			toast.success('Buyurtma qabul qilindi!', {
+				style: {
+					background: '#22c55e',
+					color: '#fff',
+					fontWeight: 'bold',
+					borderRadius: '12px',
+					padding: '16px 24px',
+					fontSize: '16px',
+				},
+			})
+			// console.log('bajarildi')
 		} catch (err) {
 			console.error('❌ Buyurtma xatolik:', err)
 			setShowErrorModal(true)
 			setShowPaymentModal(false)
 
-			toast.error('❌ Buyurtma yuborishda muammo yuz berdi.')
+			toast.error(
+				'Buyurtma yuborishda muammo yuz berdi, qayta urinib ko‘ring',
+				{
+					style: {
+						background: '#ef4444',
+						color: '#fff',
+						fontWeight: 'bold',
+						borderRadius: '12px',
+						padding: '16px 24px',
+						fontSize: '16px',
+					},
+				}
+			)
 		}
 	}
 
@@ -183,7 +212,7 @@ const Basket = () => {
 			{basket.length > 0 && (
 				<button
 					onClick={() => setShowCommentModal(true)}
-					className='bg-[rgb(22,113,98)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0'
+					className='bg-[rgb(22,113,98)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0 '
 				>
 					Buyurtma berish
 				</button>
