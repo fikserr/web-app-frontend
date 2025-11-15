@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 import Card from '../components/card'
+import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
 import useProducts from '../hooks/useProducts'
@@ -49,15 +50,8 @@ const Shop = () => {
 
 	return (
 		<div className='w-full'>
-			{!JSON.stringify(registered) ? (
-				<div className='mt-16 whitespace-nowrap animate-slide w-full mb-6 h-10 xl:text-base bg-green-300 flex items-center justify-center'>
-					<p className='flex items-center justify-center w-full px-4 py-2 text-green-800 font-medium overflow-x-hidden'>
-						Narxlarni ko‘rish uchun ro‘yxatdan o‘ting. Ro‘yxatdan o‘tgach
-						narxlar ko‘rinadi.
-					</p>
-				</div>
-			) : null}
-			<div className={`px-2 mb-16 xl:px-10 ${registered ? 'py-24' : 'py-0'}`}>
+			<RegisterBanner registered={registered} />
+			<div className={`px-2 xl:px-10 py-24`}>
 				<div className='flex items-center md:max-w-lg border justify-between p-2 rounded-xl px-5 mb-6'>
 					{/* search input */}
 					<input
