@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/popover'
 import { format } from 'date-fns'
 import { useState } from 'react'
+import RegisterBanner from '../components/RegisterBanner'
 import useAktSverka from '../hooks/useAktSverka'
 import useBalance from '../hooks/useBalance'
 import getDocConfig from '../hooks/useDocConfig' // ✅ renamed import
@@ -29,6 +30,12 @@ const Report = () => {
 		showAkt && dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null
 	)
 
+	if (!tgUser || !tgUser.id)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner registered={false} pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`} />
+			</div>
+		)
 	if (loading) return <div>Yuklanmoqda...</div>
 	if (error) return <div>Xatolik: {error.message}</div>
 
@@ -142,7 +149,7 @@ const Report = () => {
 										className={`rounded shadow p-3 text-sm border ${bgColor}`}
 									>
 										<div className='font-semibold mb-1'>{item.document}</div>
-										
+
 										{item.comment && (
 											<div className='mb-2 text-slate-600'>{item.comment}</div>
 										)}
@@ -161,8 +168,7 @@ const Report = () => {
 
 											{!hiddenFields.includes('dtSum') && (
 												<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
-													{item.textSum ? item.textSum : 'Men qarzdor (uzs)'}{' '}
-													:
+													{item.textSum ? item.textSum : 'Men qarzdor (uzs)'} :
 													<b className='block font-bold text-lg text-red-700'>
 														{item.dtSum}
 													</b>
@@ -180,8 +186,7 @@ const Report = () => {
 
 											{!hiddenFields.includes('dtVal') && (
 												<div className='bg-red-50 px-3 py-1 rounded-md border text-xs text-slate-600'>
-													{item.textVal ? item.textVal : 'Men qarzdor ($)'}{' '}
-													:
+													{item.textVal ? item.textVal : 'Men qarzdor ($)'} :
 													<b className='block font-bold text-lg text-red-700'>
 														{item.dtVal}
 													</b>
