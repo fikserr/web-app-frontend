@@ -2,8 +2,8 @@ import gsap from 'gsap'
 import { useEffect, useRef } from 'react'
 import { useMediaQuery } from '../hooks/useMediaQuery' // ⬅ import hook
 
-function RegisterBanner({registered}) {
-  const isRegistered = registered == true? registered : false // false  for testing
+function RegisterBanner({ registered, pageText }) {
+	const isRegistered = registered == true ? registered : false // false  for testing
 	const textRef = useRef(null)
 
 	// Live detection (updates instantly on resize)
@@ -12,8 +12,10 @@ function RegisterBanner({registered}) {
 	useEffect(() => {
 		if (!isRegistered && textRef.current) {
 			const textEl = textRef.current
-			const originalText =
-				`Narxlarni ko'rish va Buyurtma berish uchun ` +
+			const originalText = pageText
+				? pageText +
+				` <span class="font-bold ml-0 md:ml-1"> ro'yxatdan o'ting !</span>`
+				: `Narxlarni ko'rish va Buyurtma berish uchun` +
 				` <span class="font-bold ml-0 md:ml-1"> ro'yxatdan o'ting !</span>`
 
 			// ---- DESKTOP/TABLET MODE ----

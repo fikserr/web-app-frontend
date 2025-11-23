@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
+import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import {
 	Pagination,
@@ -37,7 +38,15 @@ const OrderList = () => {
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}, [page])
-
+	if (!tgUser || !tgUser.id)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText={'Buyurtmalaringizni ko‘rish uchun'}
+				/>
+			</div>
+		)
 	if (loading) return <p>Yuklanmoqda...</p>
 	if (error) return <p className='text-red-500'>Xatolik: {error}</p>
 
@@ -63,7 +72,10 @@ const OrderList = () => {
 								<p>
 									<strong>№ {order.number}</strong>
 								</p>
-								<p>Summa: {order.totalSum ? order.totalSum : order.totalVal }{order.totalSum ? " UZS" :" USD"} </p>
+								<p>
+									Summa: {order.totalSum ? order.totalSum : order.totalVal}
+									{order.totalSum ? ' UZS' : ' USD'}{' '}
+								</p>
 								<p>Sana: {new Date(order.date).toLocaleString()}</p>
 								<p className='text-gray-950 dark:text-gray-300'>
 									Status: {order.status}

@@ -10,7 +10,10 @@ function useBalance(userId) {
 
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+    setLoading(false); // userId yo'q bo'lsa loading false
+    return;
+  }
 
     setLoading(true);
     setError(null);
