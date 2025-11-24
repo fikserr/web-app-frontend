@@ -15,10 +15,7 @@ function useOrderList(userId, page, pageSize) {
 	const PASSWORD = import.meta.env.VITE_API_PASSWORD
 
 	useEffect(() => {
-		if (!userId) {
-			setLoading(false) // userId yo'q bo'lsa loading false
-			return;
-		}
+		if (!userId) return;
 
 		const controller = new AbortController()
 		const { signal } = controller
@@ -42,6 +39,7 @@ function useOrderList(userId, page, pageSize) {
 				)
 
 				if (!res.ok) {
+					console.log('nug');
 					throw new Error(`HTTP error! status: ${res.status}`)
 				}
 

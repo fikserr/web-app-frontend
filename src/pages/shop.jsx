@@ -50,7 +50,7 @@ const Shop = () => {
 
 	return (
 		<div className='w-full'>
-			<RegisterBanner registered={registered} />
+			<RegisterBanner registered={registered} loading={productsLoading} />
 			<div className={`px-2 xl:px-10 py-24`}>
 				<div className='flex items-center md:max-w-lg border justify-between p-2 rounded-xl px-5 mb-6'>
 					{/* search input */}

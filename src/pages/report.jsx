@@ -30,14 +30,25 @@ const Report = () => {
 		showAkt && dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null
 	)
 
-	if (!tgUser || !tgUser.id)
+	if (loading)
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
-				<RegisterBanner registered={false} pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`} />
+				<RegisterBanner
+					registered={false}
+					loading={loading}
+					pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`}
+				/>
 			</div>
 		)
-	if (loading) return <div>Yuklanmoqda...</div>
-	if (error) return <div>Xatolik: {error.message}</div>
+	if (error)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText='Buyurtmalarni ko‘rish uchun qayta urinib ko‘ring.'
+				/>
+			</div>
+		)
 
 	return (
 		<div className='px-2 xl:px-10 py-24'>
@@ -95,7 +106,7 @@ const Report = () => {
 
 			{/* Button */}
 			<Button
-				className='my-1 w-full h-11 max-h-11 bg-emerald-700 text-white'
+				className='my-1 w-full h-11 max-h-11 bg-[rgb(141,119,229)] text-white'
 				disabled={!dateRange.from || !dateRange.to}
 				onClick={() => setShowAkt(true)}
 			>
