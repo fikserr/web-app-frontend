@@ -8,8 +8,8 @@ import nothingFound from '../icons/nothingFound.gif'
 import RegisterBanner from '../components/RegisterBanner'
 
 const Categories = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
-	// const tgUser = { id: 1284897972 }
+	// const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	const tgUser = { id: 1284897972 }
 
 	const {
 		categories,
