@@ -52,7 +52,7 @@ const Categories = () => {
 
 	return (
 		<div className='w-full'>
-			<RegisterBanner registered={registered} />
+			<RegisterBanner registered={registered} loading={categoriesLoading} />
 			<div className='px-2 mb-40 mt-24'>
 			
 				{/* Search Bar */}

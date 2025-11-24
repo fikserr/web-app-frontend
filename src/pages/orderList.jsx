@@ -38,17 +38,26 @@ const OrderList = () => {
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}, [page])
-	if (!tgUser || !tgUser.id)
+
+	if (loading)
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
 					registered={false}
+					loading={loading}
 					pageText={'Buyurtmalaringizni ko‘rish uchun'}
 				/>
 			</div>
 		)
-	if (loading) return <p>Yuklanmoqda...</p>
-	if (error) return <p className='text-red-500'>Xatolik: {error}</p>
+	if (error)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText='Buyurtmalarni ko‘rish uchun qayta urinib ko‘ring.'
+				/>
+			</div>
+		)
 
 	const totalPages = Number(meta?.lastPage) || 1
 
