@@ -62,7 +62,7 @@ function RegisterBanner({ registered, pageText, loading , userId }) {
 		<div className='sticky z-50 top-16 text-sm xl:text-lg w-full bg-[#a791ff] overflow-hidden flex items-center md:justify-center py-2 xl:py-1 font-normal'>
 			<p
 				ref={textRef}
-				className='text-center text-black dark:text-[#43348a] font-medium px-4 flex items-center whitespace-nowrap'
+				className='text-center text-black dark:text-[rgb(67,52,138)] font-medium px-4 flex items-center whitespace-nowrap'
 			>
 				Narxlarni ko'rish va Buyurtma berish uchun
 				<span className='font-bold ml-1'>ro'yxatdan o'ting !</span>

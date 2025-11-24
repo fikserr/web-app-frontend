@@ -78,7 +78,7 @@ function CommentModal({
 					</Button>
 
 					<Button
-						className='bg-[rgb(22,113,98)] w-1/2 text-white'
+						className='bg-[rgb(141,119,229)] w-1/2 text-white'
 						onClick={handleConfirm}
 					>
 						Tasdiqlash

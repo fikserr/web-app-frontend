@@ -149,7 +149,7 @@ const Basket = () => {
 								<div className='flex items-end justify-between'>
 									<div className='w-full'>
 										<div className='flex items-center justify-between w-full'>
-											<p className='text-sm font-bold mt-1 text-[rgb(26,134,116)]'>
+											<p className='text-sm font-bold mt-1 text-[rgb(165,150,225)]'>
 												${item.price}
 											</p>
 											<div className='flex justify-between items-center gap-2 mt-2'>
@@ -171,7 +171,7 @@ const Basket = () => {
 															updateQuantity(item, newCount)
 														}
 													}}
-													className='px-2 bg-[rgb(22,113,98)] rounded text-white dark:bg-[rgb(22,113,98)] dark:bg-opacity-50 dark:text-emerald-500'
+													className='px-2 bg-[rgb(141,119,229)] rounded text-white dark:bg-opacity-50 '
 												>
 													−
 												</button>
@@ -182,7 +182,7 @@ const Basket = () => {
 															(counts[item.productId]?.count || 0) + 1
 														)
 													}
-													className='px-2 bg-[rgb(22,113,98)] rounded text-white dark:bg-[rgb(22,113,98)] dark:bg-opacity-50 dark:text-emerald-500'
+													className='px-2 bg-[rgb(141,119,229)] rounded text-white  dark:bg-opacity-50 '
 												>
 													+
 												</button>
@@ -191,7 +191,7 @@ const Basket = () => {
 										<div className='flex justify-between w-full'>
 											<p className='text-gray-500 mt-1 text-sm dark:text-gray-300'>
 												Miqdori:{' '}
-												<span className='text-[rgb(41,185,161)]'>
+												<span className='text-[rgb(165,150,255)]'>
 													{counts[item.productId]?.count || 0}
 												</span>
 											</p>
@@ -212,7 +212,7 @@ const Basket = () => {
 			{basket.length > 0 && (
 				<button
 					onClick={() => setShowCommentModal(true)}
-					className='bg-[rgb(22,113,98)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0 '
+					className='bg-[rgb(141,119,229)] w-80 py-2 text-white mx-auto rounded-md fixed bottom-20 right-0 left-0 '
 				>
 					Buyurtma berish
 				</button>
