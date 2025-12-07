@@ -121,7 +121,7 @@ const OrderList = () => {
 					</div>
 				))
 			) : (
-				<div className='w-full h-screen flex flex-col gap-0 items-center justify-center absolute top-20'>
+				<div className='w-full h-full flex flex-col gap-0 items-center justify-center fixed top-0 left-0 overflow-hidden hide-scrollbar'>
 					<img src={nothingFound} className='w-[300px]' />
 					<h2 className='text-3xl font-semibold mb-2'>Hech nima topilmadi</h2>
 					<p className='mb-2 text-xl dark:text-gray-400'>
