@@ -82,7 +82,12 @@ const OrderList = () => {
 									<strong>№ {order.number}</strong>
 								</p>
 								<p>
-									Summa: {order.totalSum ? order.totalSum : order.totalVal}
+									Summa:{' '}
+									{Number(order.totalSum ? order.totalSum : order.totalVal)
+										.toLocaleString('fr-FR', {
+											maximumFractionDigits: 4,
+										})
+										.replace(/\s/g, ' ')}{' '}
 									{order.totalSum ? ' UZS' : ' USD'}{' '}
 								</p>
 								<p>Sana: {new Date(order.date).toLocaleString()}</p>

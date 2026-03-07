@@ -24,9 +24,13 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 		<>
 			<div className='flex flex-col justify-between rounded-lg overflow-hidden p-2'>
 				<img
-					src={product.imageUrl || NoImage}
-					alt={product.name}
-					className='w-full h-36 object-cover rounded-xl cursor-pointer'
+					src={product.imageUrl ? product.imageUrl : NoImage}
+					alt={
+						product.name.length > 50
+							? product.name.slice(0, 50) + '…'
+							: product.name
+					}
+					className='w-full h-36 object-cover rounded-xl cursor-pointer bg-gray-200 dark:bg-gray-700'
 					onClick={() => setIsModalOpen(true)}
 				/>
 
@@ -36,14 +40,21 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 							registered ? ' items-center ' : 'items-start'
 						} `}
 					>
-						{product.name}
+						{product.name.length > 20
+							? product.name.slice(0, 20) + '…'
+							: product.name}
 					</h3>
 				</div>
 
 				<div className='pt-2'>
 					{registered ? (
-						<p className='text-xs font-bold text-white'>
-							{product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
+						<p className='text-xs font-bold dark:text-white'>
+							{Number(product.prices?.[0]?.price)
+								.toLocaleString('fr-FR', {
+									maximumFractionDigits: 4,
+								})
+								.replace(/\s/g, ' ')}{' '}
+							{product.prices?.[0]?.currencyname}
 						</p>
 					) : null}
 
