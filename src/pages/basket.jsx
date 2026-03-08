@@ -138,19 +138,30 @@ const Basket = () => {
 							<div className='rounded-xl h-full w-24'>
 								<img
 									src={item.image || noImage}
-									alt={item.name}
-									className='w-full aspect-square object-cover rounded-xl'
+									alt={
+										item.name.length > 20
+											? item.name.slice(0, 20) + '…'
+											: item.name
+									}
+									className='w-full aspect-square object-cover rounded-xl bg-gray-200 dark:bg-gray-700'
 								/>
 							</div>
 							<div className='w-2/3'>
 								<p className='text-sm font-bold text-black h-[40px] max-h-[40px] dark:text-white'>
-									{item.name}
+									{item.name.length > 60
+										? item.name.slice(0, 60) + '…'
+										: item.name}
 								</p>
 								<div className='flex items-end justify-between'>
 									<div className='w-full'>
 										<div className='flex items-center justify-between w-full'>
 											<p className='text-sm font-bold mt-1 text-[rgb(165,150,225)]'>
-												${item.price}
+												{Number(item.price)
+													.toLocaleString('fr-FR', {
+														maximumFractionDigits: 4,
+													})
+													.replace(/\s/g, ' ')}{' '}
+												so'm
 											</p>
 											<div className='flex justify-between items-center gap-2 mt-2'>
 												<button
@@ -159,11 +170,11 @@ const Basket = () => {
 															(counts[item.productId]?.count || 0) - 1
 														if (newCount <= 0) {
 															const updatedBasket = basket.filter(
-																b => b.productId !== item.productId
+																b => b.productId !== item.productId,
 															)
 															localStorage.setItem(
 																'basket_counts',
-																JSON.stringify(updatedBasket)
+																JSON.stringify(updatedBasket),
 															)
 															setBasket(updatedBasket)
 															updateQuantity(item, 0)
@@ -197,7 +208,13 @@ const Basket = () => {
 											</p>
 											<p className='text-gray-500 mt-1 text-sm dark:text-gray-300'>
 												Summa:{' '}
-												{(counts[item.productId]?.count || 0) * item.price}
+												{Number(
+													(counts[item.productId]?.count || 0) * item.price,
+												)
+													.toLocaleString('fr-FR', {
+														maximumFractionDigits: 4,
+													})
+													.replace(/\s/g, ' ')}
 											</p>
 										</div>
 									</div>
