@@ -48,7 +48,7 @@ const Basket = () => {
 			if (paymentType === 'click') {
 				const amount = basket.reduce(
 					(acc, item) => acc + item.price * (counts[item.Id]?.count || 0),
-					0
+					0,
 				)
 
 				const res = await axios.post(
@@ -56,7 +56,7 @@ const Basket = () => {
 					{
 						order_id: orderData.UUID, // har bir buyurtma uchun unique ID
 						amount,
-					}
+					},
 				)
 
 				if (res.data?.success && res.data?.paymentUrl) {
@@ -111,7 +111,7 @@ const Basket = () => {
 						padding: '16px 24px',
 						fontSize: '16px',
 					},
-				}
+				},
 			)
 		}
 	}
@@ -148,8 +148,8 @@ const Basket = () => {
 							</div>
 							<div className='w-2/3'>
 								<p className='text-sm font-bold text-black h-[40px] max-h-[40px] dark:text-white'>
-									{item.name.length > 60
-										? item.name.slice(0, 60) + '…'
+									{item.name.length > 48
+										? item.name.slice(0, 48) + '…'
 										: item.name}
 								</p>
 								<div className='flex items-end justify-between'>
@@ -190,7 +190,7 @@ const Basket = () => {
 													onClick={() =>
 														updateQuantity(
 															item,
-															(counts[item.productId]?.count || 0) + 1
+															(counts[item.productId]?.count || 0) + 1,
 														)
 													}
 													className='px-2 bg-[rgb(141,119,229)] rounded text-white  dark:bg-opacity-50 '
