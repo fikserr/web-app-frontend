@@ -143,7 +143,7 @@ const Basket = () => {
 											? item.name.slice(0, 20) + '…'
 											: item.name
 									}
-									className='w-full aspect-square object-cover rounded-xl bg-gray-200 dark:bg-gray-700'
+									className='w-full aspect-square object-contain rounded-xl '
 								/>
 							</div>
 							<div className='w-2/3'>
