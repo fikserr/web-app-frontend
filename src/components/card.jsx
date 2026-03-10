@@ -30,7 +30,7 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 							? product.name.slice(0, 50) + '…'
 							: product.name
 					}
-					className='w-full h-36 object-cover rounded-xl cursor-pointer bg-gray-200 dark:bg-gray-700'
+					className='w-full h-36 object-contain rounded-xl cursor-pointer'
 					onClick={() => setIsModalOpen(true)}
 				/>
 
