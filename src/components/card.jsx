@@ -2,7 +2,7 @@ import { useState } from 'react'
 import NoImage from '../assets/no-photo.jpg'
 import { Skeleton } from './ui/skeleton'
 
-const Card = ({ product, productInCart, onUpdate, loading }) => {
+const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	if (loading) {
@@ -24,26 +24,45 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
 		<>
 			<div className='flex flex-col justify-between rounded-lg overflow-hidden p-2'>
 				<img
-					src={product.imageUrl || NoImage}
-					alt={product.name}
-					className='w-full h-36 object-cover rounded-xl cursor-pointer'
+					src={product.imageUrl ? product.imageUrl : NoImage}
+					alt={
+						product.name.length > 50
+							? product.name.slice(0, 50) + '…'
+							: product.name
+					}
+					className='w-full h-36 object-contain rounded-xl cursor-pointer'
 					onClick={() => setIsModalOpen(true)}
 				/>
 
 				<div>
-					<h3 className='text-sm font-semibold mt-2'>{product.name}</h3>
+					<h3
+						className={`h-10 text-sm flex font-semibold mt-2 ${
+							registered ? ' items-center ' : 'items-start'
+						} `}
+					>
+						{product.name.length > 20
+							? product.name.slice(0, 20) + '…'
+							: product.name}
+					</h3>
 				</div>
 
 				<div className='pt-2'>
-					<p className='text-xs font-bold text-emerald-700'>
-						{product.prices?.[0]?.price} {product.prices?.[0]?.currencyname}
-					</p>
+					{registered ? (
+						<p className='text-xs font-bold dark:text-white'>
+							{Number(product.prices?.[0]?.price)
+								.toLocaleString('fr-FR', {
+									maximumFractionDigits: 4,
+								})
+								.replace(/\s/g, ' ')}{' '}
+							{product.prices?.[0]?.currencyname}
+						</p>
+					) : null}
 
 					{productInCart ? (
 						<div className='flex justify-between items-center gap-2 mt-2'>
 							<button
 								onClick={() => onUpdate(product, productInCart.count - 1)}
-								className='px-3 py-1 bg-[rgb(22,113,98)] rounded text-base text-white'
+								className='px-3 py-1 bg-[rgb(141,119,229)] rounded text-base text-white'
 							>
 								−
 							</button>
@@ -59,7 +78,7 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
 
 							<button
 								onClick={() => onUpdate(product, productInCart.count + 1)}
-								className='px-3 py-1 bg-[rgb(22,113,98)] rounded text-white'
+								className='px-3 py-1 bg-[rgb(141,119,229)] rounded text-white'
 							>
 								+
 							</button>
@@ -67,8 +86,9 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
 					) : (
 						<div className="flex justify-end" title="Savatga qo'shish">
 							<button
+								disabled={!registered}
 								onClick={() => onUpdate(product, 1)}
-								className='px-3 py-1 mt-2 bg-[rgb(22,113,98)] rounded text-white w-full'
+								className='px-3 py-1 mt-2 bg-[rgb(141,119,229)] disabled:bg-[rgb(79,72,134)] rounded text-black dark:text-white w-full'
 							>
 								Savatga qo'shish
 							</button>

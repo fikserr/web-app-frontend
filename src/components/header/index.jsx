@@ -2,28 +2,38 @@ import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { IoHome } from 'react-icons/io5'
 import { Link } from 'react-router-dom'
-import Logo from '../../assets/Logo.png'
 import LogoDark from '../../assets/LogoDark.png'
 import LogoLight from '../../assets/LogoLight.png'
 
 const Header = () => {
-	const tg = window.Telegram?.WebApp // optional chaining bilan
 
+	// ✅ CHANGE 1: safer telegram access
+	const tg = window?.Telegram?.WebApp
+
+	// ✅ CHANGE 2: Telegram theme has priority over localStorage
 	const [theme, setTheme] = useState(
-		localStorage.getItem('theme') || (tg ? tg.colorScheme : 'light')
+		tg?.colorScheme || localStorage.getItem('theme') || 'light'
 	)
 
+	// apply theme to html
 	useEffect(() => {
 		if (theme === 'dark') {
 			document.documentElement.classList.add('dark')
 		} else {
 			document.documentElement.classList.remove('dark')
 		}
+
 		localStorage.setItem('theme', theme)
 	}, [theme])
 
+	// ✅ CHANGE 3: Telegram initialization + theme sync
 	useEffect(() => {
 		if (!tg) return
+
+		tg.ready() // tell Telegram WebApp is ready
+
+		// apply telegram theme immediately
+		setTheme(tg.colorScheme)
 
 		const handleThemeChange = () => {
 			setTheme(tg.colorScheme)
@@ -34,12 +44,19 @@ const Header = () => {
 		return () => {
 			tg.offEvent('themeChanged', handleThemeChange)
 		}
-	}, [tg])
+	}, []) // ✅ CHANGE 4: removed [tg] dependency
 
 	return (
 		<div className='px-5 xl:px-10 h-16 py-1 dark:bg-gray-800 text-gray-900 bg-white dark:text-gray-100 shadow-md fixed w-full top-0 z-50 '>
 			<div className='my-3 flex items-center justify-between'>
-				<img src={theme == "dark" ? LogoLight : LogoDark} alt='Logo' className='h-9 w-32 aspect-auto   dark:shadow-md' />
+				
+				{/* small improvement */}
+				<img
+					src={theme === 'dark' ? LogoLight : LogoDark}
+					alt='Logo'
+					className='h-9 w-32 aspect-auto dark:shadow-md'
+				/>
+
 				<div className='flex items-center gap-5'>
 					<Link to={'/home'}>
 						<IoHome style={{ fontSize: '25px' }} />

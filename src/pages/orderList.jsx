@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
+import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import {
 	Pagination,
@@ -37,8 +38,25 @@ const OrderList = () => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}, [page])
 
-	if (loading) return <p>Yuklanmoqda...</p>
-	if (error) return <p className='text-red-500'>Xatolik: {error}</p>
+	if (loading)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					loading={loading}
+					pageText={'Buyurtmalaringizni ko‘rish uchun'}
+				/>
+			</div>
+		)
+	if (error)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText='Buyurtmalarni ko‘rish uchun qayta urinib ko‘ring.'
+				/>
+			</div>
+		)
 
 	const totalPages = Number(meta?.lastPage) || 1
 
@@ -62,7 +80,15 @@ const OrderList = () => {
 								<p>
 									<strong>№ {order.number}</strong>
 								</p>
-								<p>Summa: {order.totalSum ? order.totalSum : order.totalVal }{order.totalSum ? " UZS" :" USD"} </p>
+								<p>
+									Summa:{' '}
+									{Number(order.totalSum ? order.totalSum : order.totalVal)
+										.toLocaleString('fr-FR', {
+											maximumFractionDigits: 4,
+										})
+										.replace(/\s/g, ' ')}{' '}
+									{order.totalSum ? ' UZS' : ' USD'}{' '}
+								</p>
 								<p>Sana: {new Date(order.date).toLocaleString()}</p>
 								<p className='text-gray-950 dark:text-gray-300'>
 									Status: {order.status}
@@ -99,7 +125,7 @@ const OrderList = () => {
 					</div>
 				))
 			) : (
-				<div className='w-full h-screen flex flex-col gap-0 items-center justify-center absolute top-20'>
+				<div className='w-full h-full flex flex-col gap-0 items-center justify-center fixed top-0 left-0 overflow-hidden hide-scrollbar'>
 					<img src={nothingFound} className='w-[300px]' />
 					<h2 className='text-3xl font-semibold mb-2'>Hech nima topilmadi</h2>
 					<p className='mb-2 text-xl dark:text-gray-400'>

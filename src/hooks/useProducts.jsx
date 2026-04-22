@@ -10,6 +10,7 @@ export default function useProducts({
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [registered, setRegistered] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // 🔑 Login parolni .env dan olamiz
@@ -29,6 +30,7 @@ export default function useProducts({
             password: PASSWORD,
           },
         });
+        setRegistered(res.data?.registered || false);
         setProducts(res.data?.data || []);
         setError(null);
       } catch (err) {
@@ -49,5 +51,5 @@ export default function useProducts({
     return () => controller.abort(); // ✅ eski requestni to‘xtatish
   }, [fetchProducts]);
 
-  return { products, loading, error };
+  return { products, loading, error , registered };
 }
