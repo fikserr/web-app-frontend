@@ -11,7 +11,6 @@ import useBasket from "../hooks/useBasket";
 import useOrder from "../hooks/useOrder";
 
 const Basket = () => {
-  // const tgUser = { id: 1284897972 };
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
   const [showCommentModal, setShowCommentModal] = useState(false);
@@ -22,14 +21,15 @@ const Basket = () => {
   const { basket, setBasket, clearBasket } = useBasket();
   const { createOrder } = useOrder();
 
-  const tzOffset = 5 * 60;
-  const localDate = new Date(Date.now() + tzOffset * 60 * 1000);
-  const formatted = localDate.toISOString().slice(0, 19);
   const { counts, updateQuantity } = useAddBasket();
 
   // Handle order confirmation
   const handleConfirmOrder = async (paymentType) => {
     if (!basket.length) return;
+
+    const tzOffset = 5 * 60;
+    const localDate = new Date(Date.now() + tzOffset * 60 * 1000);
+    const formatted = localDate.toISOString().slice(0, 19);
 
     const orderData = {
       userId: String(tgUser?.id),
@@ -75,19 +75,12 @@ const Basket = () => {
       setShowPaymentModal(false);
       setShowCommentModal(false);
 
-      toast({
-        title: "✅ Buyurtma qabul qilindi!",
-        description: "Buyurtmangiz muvaffaqiyatli qabul qilindi.",
-      });
+      toast.success("Buyurtma qabul qilindi!");
     } catch (err) {
       console.error("❌ Buyurtma xatolik:", err);
       setShowErrorModal(true);
       setShowPaymentModal(false);
-      toast({
-        title: "❌ Xatolik!",
-        description: "Buyurtma yuborishda muammo yuz berdi.",
-        variant: "destructive",
-      });
+      toast.error("Buyurtma yuborishda muammo yuz berdi.");
     }
   };
 
@@ -135,10 +128,6 @@ const Basket = () => {
                             if (newCount <= 0) {
                               const updatedBasket = basket.filter(
                                 (b) => b.productId !== item.productId
-                              );
-                              localStorage.setItem(
-                                "basket_counts",
-                                JSON.stringify(updatedBasket)
                               );
                               setBasket(updatedBasket);
                               updateQuantity(item, 0);

@@ -65,7 +65,7 @@ const Card = ({ product, productInCart, onUpdate, loading }) => {
 							</button>
 						</div>
 					) : (
-						<div className="flex justify-end' title='Savatga qo'shish">
+						<div className="flex justify-end" title="Savatga qo'shish">
 							<button
 								onClick={() => onUpdate(product, 1)}
 								className='px-3 py-1 mt-2 bg-[rgb(22,113,98)] rounded text-white w-full'

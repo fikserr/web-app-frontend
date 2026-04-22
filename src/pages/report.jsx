@@ -12,7 +12,6 @@ import useBalance from '../hooks/useBalance'
 import getDocConfig from '../hooks/useDocConfig' // ✅ renamed import
 
 const Report = () => {
-	// const tgUser = { id: 1284897972 }
 	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
 	const { balance, loading, error } = useBalance(tgUser?.id)
@@ -234,7 +233,6 @@ const Report = () => {
 				</div>
 			)}
 
-			{console.log(akt?.data)}
 		</div>
 	)
 }

@@ -15,7 +15,6 @@ export default function useCategories(userId, page = 1, pageSize = 10) {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    console.log(categories);
 
     axios
       .get(`${API_BASE_URL}/category`, {

@@ -12,8 +12,7 @@ export default function useOrder() {
   const createOrder = async (orderData) => {
     setLoading(true);
     setError(null);
-    console.log(orderData);
-    
+
     try {
       const res = await axios.post(`${API_BASE_URL}/order`, orderData, {
         auth: { username: USERNAME, password: PASSWORD },
