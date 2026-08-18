@@ -1,6 +1,11 @@
 import { useCallback, useState } from "react";
 import api from "../lib/api";
 
+// the backend requires a real GUID for "ids" (400s otherwise) — some historical orders
+// were created with a non-GUID placeholder UUID (e.g. a literal test value that got
+// submitted as a real order at some point) and can never have a working detail lookup
+const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // The orders list ("/documents/orders") only returns header-level data — products are
 // just a count. The actual line items live behind "/documents/orders/detail", filtered by
 // a single order's UUID via the "ids" param, and fetched lazily (only when the user
@@ -13,6 +18,14 @@ function useOrderDetail() {
   const fetchOrderDetail = useCallback(
     async (orderUUID, userId) => {
       if (!orderUUID || detailsByOrderId[orderUUID]) return;
+
+      if (!GUID_RE.test(orderUUID)) {
+        setErrorByOrderId((prev) => ({
+          ...prev,
+          [orderUUID]: "Bu buyurtmaning ID formati eski/noto'g'ri — tafsilotlarini ko'rsatib bo'lmaydi",
+        }));
+        return;
+      }
 
       setLoadingOrderId(orderUUID);
       setErrorByOrderId((prev) => {
@@ -47,9 +60,12 @@ function useOrderDetail() {
         setDetailsByOrderId((prev) => ({ ...prev, [orderUUID]: rows }));
       } catch (err) {
         console.error("[OrderDetail] fetch error:", err);
+        const backendMessage = Array.isArray(err?.response?.data?.errorMessage)
+          ? err.response.data.errorMessage.map((e) => e.message || e).join("; ")
+          : err?.response?.data?.errorMessage;
         setErrorByOrderId((prev) => ({
           ...prev,
-          [orderUUID]: err?.message || "Mahsulotlarni yuklashda xatolik",
+          [orderUUID]: backendMessage || err?.message || "Mahsulotlarni yuklashda xatolik",
         }));
       } finally {
         setLoadingOrderId((current) => (current === orderUUID ? null : current));
