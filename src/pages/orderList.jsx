@@ -12,9 +12,31 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from '../components/ui/pagination'
+import useOrderDetail from '../hooks/useOrderDetail'
 import useOrderList from '../hooks/useOrderList'
 import { getUserId } from '../lib/auth'
 import nothingFound from '../icons/nothingFound.gif'
+
+// backend field names for /documents/orders/detail rows aren't confirmed yet — wide
+// fallback candidates the same way the rest of this app handles uncertain backend shapes,
+// until a real response sample narrows this down
+const normalizeDetailRow = (row, index, orderId) => {
+	const product = row.product || row.Product || {}
+	const measure = row.measure || row.quantities?.[0]?.measure || {}
+	const currency = row.currency || {}
+	const quantity = Number(row.quantity ?? row.quantities?.[0]?.quantity ?? row.qty ?? 0)
+	const price = Number(row.price ?? row.quantities?.[0]?.price ?? 0)
+
+	return {
+		key: row.id ?? row.Id ?? product.id ?? row.productId ?? row.product_id ?? `${orderId}-${index}`,
+		name: product.name ?? row.productName ?? row.product_name ?? row.name ?? 'Mahsulot',
+		quantity,
+		measureName: measure.name ?? row.measureName ?? row.measurName ?? row.unitName ?? '',
+		price,
+		currencyName: currency.name ?? row.currencyName ?? 'UZS',
+		amount: Number(row.amount ?? row.quantities?.[0]?.amount ?? quantity * price),
+	}
+}
 
 // backend "DD.MM.YYYY HH:MM:SS" formatida sana yuboradi — new Date() buni ishonchli parse qilolmaydi
 const parseOrderDate = value => {
@@ -39,12 +61,15 @@ const OrderList = () => {
 		pageSize
 	)
 	const [expandedOrders, setExpandedOrders] = useState({})
+	const { detailsByOrderId, loadingOrderId, errorByOrderId, fetchOrderDetail } = useOrderDetail()
 
 	const toggleProducts = orderId => {
+		const opening = !expandedOrders[orderId]
 		setExpandedOrders(prev => ({
 			...prev,
-			[orderId]: !prev[orderId],
+			[orderId]: opening,
 		}))
+		if (opening) fetchOrderDetail(orderId, userId)
 	}
 
 	useEffect(() => {
@@ -85,13 +110,13 @@ const OrderList = () => {
 			{orders.length > 0 ? (
 				orders.map(order => {
 					const orderId = order.UUID ?? order.Id ?? order.id ?? order.orderId ?? order.code ?? order.number
-					// the list endpoint only returns a count, not the actual line items (see productsCount below)
-					const productList = Array.isArray(order.productList)
-						? order.productList
-						: Array.isArray(order.products)
-							? order.products
-							: []
-					const productsCount = Number(order.productsCount ?? productList.length ?? 0)
+					// the list endpoint only returns a count ("productsCount") — the actual line
+					// items are fetched lazily via useOrderDetail when this order is expanded
+					const productsCount = Number(order.productsCount ?? 0)
+					const detailRows = detailsByOrderId[orderId]
+					const productList = Array.isArray(detailRows) ? detailRows.map((row, index) => normalizeDetailRow(row, index, orderId)) : []
+					const isLoadingProducts = loadingOrderId === orderId
+					const productsError = errorByOrderId[orderId]
 					// amountToPaySum is the UZS total; USD is never shown to the customer
 					const orderTotal = Number(order.amountToPaySum ?? 0)
 					const statusLabel =
@@ -137,26 +162,31 @@ const OrderList = () => {
 
 							{expandedOrders[orderId] && (
 								<div className='mt-3 space-y-2'>
-									{productList.length > 0 ? (
-										productList.map((product, index) => (
+									{isLoadingProducts ? (
+										<p className='text-sm text-gray-500'>Yuklanmoqda...</p>
+									) : productsError ? (
+										<p className='text-sm text-red-500'>{productsError}</p>
+									) : productList.length > 0 ? (
+										productList.map(product => (
 											<div
-												key={product.productId ?? product.product_id ?? `${orderId}-${index}`}
+												key={product.key}
 												className='border rounded p-2 bg-gray-50 flex items-center gap-3 dark:bg-gray-700'
 											>
 												<div>
 													<p className='font-medium h-[50px] max-h-[50px]'>
-														{product.productName ?? product.name ?? 'Mahsulot'}
+														{product.name}
 													</p>
 													<p className='text-sm text-gray-600 dark:text-gray-300'>
-														{product.quantity ?? 0} {product.measurName ?? product.measureName ?? ''} ×{' '}
-														{product.price ?? 0} {product.currencyName ?? product.currency ?? ''}
+														{product.quantity} {product.measureName} ×{' '}
+														{product.price.toLocaleString('fr-FR', { maximumFractionDigits: 4 }).replace(/\s/g, ' ')}{' '}
+														{product.currencyName}
 													</p>
 												</div>
 											</div>
 										))
 									) : productsCount > 0 ? (
 										<p className='text-sm text-gray-500'>
-											Bu buyurtmada {productsCount} ta mahsulot bor — batafsil ro'yxat hozircha mavjud emas
+											Bu buyurtmada {productsCount} ta mahsulot bor, lekin batafsil ma'lumot topilmadi
 										</p>
 									) : (
 										<p className='text-sm text-gray-500'>Mahsulotlar mavjud emas</p>

@@ -109,7 +109,7 @@ function scheduleTokenRefresh(remainingSeconds) {
   _refreshTimer = setTimeout(async () => {
     try {
       console.log('[Auth] Automatic token refresh triggered')
-      await refreshTokenRequest()
+      await refreshOrRelogin()
     } catch (e) {
       console.warn('Scheduled token refresh failed:', e)
     }
@@ -134,7 +134,7 @@ export function scheduleTokenRefreshFromToken(token) {
 
   if (remainingSec <= 0) {
     console.log('[Auth] Token already expired — refreshing now')
-    refreshTokenRequest().catch((e) => console.warn('[Auth] Immediate refresh failed:', e))
+    refreshOrRelogin().catch((e) => console.warn('[Auth] Immediate refresh failed:', e))
     return
   }
 
@@ -143,6 +143,21 @@ export function scheduleTokenRefreshFromToken(token) {
 
 export function scheduleTokenRefreshForExistingToken() {
   scheduleTokenRefreshFromToken(localStorage.getItem('token'))
+}
+
+// Browsers throttle (or fully pause) setTimeout timers in background tabs, so the
+// proactive refresh armed above can fire very late — or never — while the Telegram
+// WebView is backgrounded (user switched to another chat/app, which is extremely common
+// mid-session for a Mini App). Re-checking whenever the tab regains visibility closes
+// that gap instead of relying purely on the timer.
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return
+    const token = localStorage.getItem('token')
+    if (!token) return
+    console.log('[Auth] Tab became visible — re-checking token freshness')
+    scheduleTokenRefreshFromToken(token)
+  })
 }
 
 export default api
@@ -155,22 +170,39 @@ export default api
 // NOTE: this requires the Vercel function to actually be running — `npm run dev` alone
 // (plain Vite) does not serve /api/*; use `vercel dev` locally, or test against a real
 // Vercel deployment.
-export async function loginViaTelegram() {
-  const initData = window?.Telegram?.WebApp?.initData
-  if (!initData) throw new Error('Telegram initData mavjud emas')
+//
+// Deduplicated the same way as refreshTokenRequest — if a refresh genuinely fails for two
+// concurrent callers (e.g. the scheduled proactive refresh and a reactive 401 both firing
+// around the same idle-too-long moment), both would otherwise fall back to loginViaTelegram
+// at once, sending two concurrent logins for no reason.
+let _loginPromise = null
 
-  const res = await axios.post('/api/login', { initData })
-  console.log('[Auth] login response:', res?.data)
-  const content = res?.data?.data?.content || {}
-  const token = content?.accesToken || res?.data?.token || res?.data?.accessToken
-  const refresh = content?.refreshToken || res?.data?.refreshToken
-  const baseURL = content?.URL || undefined
-  if (baseURL) api.defaults.baseURL = baseURL
-  if (token) {
-    console.log('[Auth] login JWT payload:', decodeJwtPayload(token))
-    setToken(token, { refreshToken: refresh, baseURL })
-  }
-  return { token, refresh, baseURL }
+export function loginViaTelegram() {
+  if (_loginPromise) return _loginPromise
+
+  _loginPromise = (async () => {
+    const initData = window?.Telegram?.WebApp?.initData
+    if (!initData) throw new Error('Telegram initData mavjud emas')
+
+    const res = await axios.post('/api/login', { initData })
+    console.log('[Auth] login response:', res?.data)
+    const content = res?.data?.data?.content || {}
+    const token = content?.accesToken || res?.data?.token || res?.data?.accessToken
+    const refresh = content?.refreshToken || res?.data?.refreshToken
+    const baseURL = content?.URL || undefined
+    if (baseURL) api.defaults.baseURL = baseURL
+    if (token) {
+      console.log('[Auth] login JWT payload:', decodeJwtPayload(token))
+      setToken(token, { refreshToken: refresh, baseURL })
+    }
+    return { token, refresh, baseURL }
+  })()
+
+  _loginPromise.finally(() => {
+    _loginPromise = null
+  })
+
+  return _loginPromise
 }
 
 // Attempt to refresh using stored refresh token. Endpoint path configurable via env `VITE_REFRESH_PATH` (default '/refresh')
@@ -215,7 +247,30 @@ export function refreshTokenRequest() {
   return _refreshPromise
 }
 
-// Response interceptor to try refresh on 401 and retry original request once
+// Tries a token refresh first; if that genuinely fails (refresh token expired, revoked,
+// or otherwise rejected by the backend — not just the race handled above), falls back to
+// a brand new Telegram login instead of giving up. Telegram's initData is available at
+// any point in the session regardless of how long it's been idle, so there's no need to
+// make the user close and reopen the app to recover — without this fallback, any real
+// refresh failure left the app stuck with no token and no way to get a new one until the
+// next full reopen (main.jsx only calls loginViaTelegram at boot).
+async function refreshOrRelogin() {
+  try {
+    return await refreshTokenRequest()
+  } catch (refreshErr) {
+    console.warn('[Auth] Refresh failed, attempting a fresh Telegram login instead:', refreshErr)
+    try {
+      return await loginViaTelegram()
+    } catch (loginErr) {
+      console.warn('[Auth] Fresh login also failed:', loginErr)
+      setToken(null)
+      throw loginErr
+    }
+  }
+}
+
+// Response interceptor to try refresh (falling back to a fresh login) on 401, and retry
+// the original request once
 api.interceptors.response.use(
   res => {
     console.log('[Auth] response:', {
@@ -243,11 +298,10 @@ api.interceptors.response.use(
     if (err.response && err.response.status === 401 && !originalReq._retry) {
       originalReq._retry = true
       try {
-        await refreshTokenRequest()
+        await refreshOrRelogin()
         return api(originalReq)
       } catch (refreshErr) {
-        // failed to refresh, clear tokens
-        setToken(null)
+        // refreshOrRelogin() already cleared the token on total failure
         return Promise.reject(refreshErr)
       }
     }

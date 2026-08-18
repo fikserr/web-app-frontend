@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import api from '../lib/api'
 import useAddBasket from '../hooks/useAddBasket'
 import { toast } from 'sonner'
@@ -8,8 +8,12 @@ import { resolveDisplayPrice } from '../lib/pricing'
 
 const Detail = () => {
     const [isBottom, setIsBottom] = useState(false);
-    const [product, setProduct] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const location = useLocation()
+    // card.jsx passes the product it already fetched (from /catalogs/products/full, so it's
+    // complete — description included) via navigation state. Only hit the API when that's
+    // missing, e.g. someone opened /detail/:id directly instead of navigating in-app.
+    const [product, setProduct] = useState(location.state?.product || null)
+    const [loading, setLoading] = useState(!location.state?.product)
     const { id } = useParams()
     const { counts, updateQuantity } = useAddBasket()
 
@@ -27,7 +31,7 @@ const Detail = () => {
     }, []);
 
     useEffect(() => {
-        if (!id) return
+        if (!id || location.state?.product) return
         let cancelled = false
         setLoading(true)
         api.get(`/product/${id}`).then(res => {
@@ -47,12 +51,13 @@ const Detail = () => {
             if (!cancelled) setLoading(false)
         })
         return () => { cancelled = true }
-    }, [id])
+    }, [id, location.state])
 
     if (loading) return <div className='py-24 text-center'>Yuklanmoqda...</div>
     if (!product) return <div className='py-24 text-center'>Mahsulot topilmadi</div>
 
     const displayPrice = resolveDisplayPrice(product)
+    const description = product.description || product.shortDescription || product.desc || product.opisanie || product.note || ''
 
     const addToCart = () => {
         try {
@@ -67,8 +72,7 @@ const Detail = () => {
 
     return (
         <div className='mb-32 grid sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:px-5 xl:px-10 mt-24'>
-            <div className='grid grid-cols-2 sm:grid-cols-1 md:grid-cols-2 sm:col-span-1 md:col-span-2'>
-                <img src={product.imageUrl || NoImage} alt={product.name} className='mx-auto w-full rounded-xl' />
+            <div className='sm:col-span-1 md:col-span-2'>
                 <img src={product.imageUrl || NoImage} alt={product.name} className='mx-auto w-full rounded-xl' />
             </div>
             <div className='px-2 sm:col-span-2 md:col-span-1 lg:col-span-2'>
@@ -78,18 +82,23 @@ const Detail = () => {
                         ? `${displayPrice.price.toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm`
                         : 'Narx belgilanmagan'}
                 </p>
-                <p className='text-slate-500'>
-                    {product.description || product.shortDescription || ''}
-                </p>
+                {description && (
+                    <p className='text-slate-500'>
+                        {description}
+                    </p>
+                )}
 
-                <h3 className='font-semibold text-xl mt-5'>Tavsifi</h3>
-                {/* render basic metadata when available */}
-                {(product.attributes || []).map(attr => (
-                    <div key={attr.name} className='flex justify-between px-2 border-b-2 pb-2'>
-                        <p className='text-slate-500'>{attr.name}</p>
-                        <p>{attr.value}</p>
-                    </div>
-                ))}
+                {(product.attributes || []).length > 0 && (
+                    <>
+                        <h3 className='font-semibold text-xl mt-5'>Tavsifi</h3>
+                        {product.attributes.map(attr => (
+                            <div key={attr.name} className='flex justify-between px-2 border-b-2 pb-2'>
+                                <p className='text-slate-500'>{attr.name}</p>
+                                <p>{attr.value}</p>
+                            </div>
+                        ))}
+                    </>
+                )}
             </div>
             {isBottom && (
                 <>
@@ -99,7 +108,11 @@ const Detail = () => {
                     >
                         Xaridlarga qaytish
                     </Link>
-                    <button onClick={addToCart} className='bg-[rgb(22,113,98)] w-full py-2 text-white rounded-md fixed bottom-0 right-0 left-0'>
+                    <button
+                        onClick={addToCart}
+                        disabled={displayPrice.price == null}
+                        className='bg-[rgb(22,113,98)] disabled:opacity-50 w-full py-2 text-white rounded-md fixed bottom-0 right-0 left-0'
+                    >
                         Savatga Qo'shish
                     </button>
                 </>
