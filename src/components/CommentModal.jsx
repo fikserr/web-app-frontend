@@ -16,7 +16,6 @@ function CommentModal({
 	setShowPaymentModal = () => {},
 	basket = [],
 	counts = {},
-	handleConfirmOrder,
 }) {
 	// Format amount to UZS currency
 	const formatCurrency = amount =>
@@ -29,11 +28,10 @@ function CommentModal({
 			.format(amount)
 			.replace('UZS', "so'm")
 
-	// Called when user confirms the comment
+	// Called when user confirms the comment — endi to'lov turini tanlash oynasi ochiladi
 	function handleConfirm() {
 		setShowCommentModal(false)
-		setShowPaymentModal(false) // true qilinsa to'lov modali ochiladi
-		handleConfirmOrder('qarzga') // avtomatik qarzga buyurtma berish
+		setShowPaymentModal(true)
 	}
 
 

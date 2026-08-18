@@ -4,18 +4,18 @@ import { useNavigate } from 'react-router-dom'
 import noImage from '../assets/no-photo.jpg'
 import { Skeleton } from '../components/ui/skeleton'
 import useCategories from '../hooks/useCategories'
+import { getUserId } from '../lib/auth'
 import nothingFound from '../icons/nothingFound.gif'
 import RegisterBanner from '../components/RegisterBanner'
 
 const Categories = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	const userId = getUserId()
 	const {
 		categories,
-		meta,
 		loading: categoriesLoading,
 		error: categoriesError,
 		registered
-	} = useCategories(tgUser?.id, 1, 10)
+	} = useCategories(userId, 1, 10)
 
 	const [cat, setCat] = useState([])
 	const [searchTerm, setSearchTerm] = useState('')
@@ -33,21 +33,21 @@ const Categories = () => {
 	}, [categories])
 
 	const filteredCategories = cat.filter(category =>
-		category.name.toLowerCase().includes(searchTerm.toLowerCase())
+		(category.name || '').toLowerCase().includes((searchTerm || '').toLowerCase())
 	)
 
 	const handleCategoryClick = id => {
-		const selectedCategory = filteredCategories.find(c => c.Id === id)
+		const selectedCategory = filteredCategories.find(c => c.id === id)
 		navigate('/shop')
 		localStorage.setItem('selectedCategory', JSON.stringify(selectedCategory))
 		setCat(prev =>
 			prev.map(c => ({
 				...c,
-				active: c.Id === selectedCategory.Id,
+				active: c.id === selectedCategory.id,
 			}))
 		)
 	}
-
+	console.log(userId, 'userId')
 	return (
 		<div className='w-full'>
 			<RegisterBanner registered={registered} loading={categoriesLoading} />
@@ -94,19 +94,19 @@ const Categories = () => {
 					<div className='grid grid-cols-3 sm:grid-cols-4 justify-around gap-4'>
 						{filteredCategories.map(c => (
 							<div
-								key={c.Id}
-								onClick={() => handleCategoryClick(c.Id)}
+								key={c.id}
+								onClick={() => handleCategoryClick(c.id)}
 								className='cursor-pointer flex flex-col items-center justify-center text-center transition-all'
 							>
 								<div className='w-24 h-24 rounded-xl flex items-center justify-center mb-2 shadow-md overflow-hidden border-2 transition-all'>
 									<img
 										src={c.imageUrl || noImage}
-										alt={c.title}
+										alt={c.name}
 										className='w-full h-full object-contain'
 									/>
 								</div>
 								<p className='text-sm font-medium h-[40px] max-h-[40px] overflow-auto'>
-									{c.name.length > 20 ? c.name.slice(0, 30) + '...' : c.name}
+									{(c.name || '').length > 20 ? (c.name || '').slice(0, 30) + '...' : (c.name || '')}
 								</p>
 							</div>
 						))}

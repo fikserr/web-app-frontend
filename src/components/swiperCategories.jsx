@@ -46,7 +46,7 @@ const CategorySwiper = ({ categories, handleCategoryClick, loading }) => {
                 />
               </div>
               <p className="text-sm font-medium z-0">
-                {cat.name.length > 20 ? cat.name.slice(0, 30) + "..." : cat.name}
+                {(cat.name || '').length > 20 ? (cat.name || '').slice(0, 30) + "..." : (cat.name || '')}
               </p>
             </div>
           </SwiperSlide>

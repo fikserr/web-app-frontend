@@ -30,4 +30,18 @@ export default [
       ],
     },
   },
+  {
+    // build-time config files run under Node, not the browser
+    files: ['vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    // Vercel serverless functions run under Node, not the browser
+    files: ['api/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ]

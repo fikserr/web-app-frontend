@@ -3,10 +3,10 @@ import gsap from 'gsap'
 import { useEffect, useRef } from 'react'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 
-function RegisterBanner({ registered, pageText, loading , userId }) {
+function RegisterBanner({ registered, pageText, loading }) {
 	const isLoading =
 		registered === null || registered === undefined || loading === true
-	const isRegistered = registered === true || !userId === null || !userId === undefined
+	const isRegistered = registered === true
 	const textRef = useRef(null)
 	const isMobile = useMediaQuery('(max-width: 768px)')
 
@@ -43,7 +43,7 @@ function RegisterBanner({ registered, pageText, loading , userId }) {
 		})
 
 		return () => tl.kill()
-	}, [isRegistered, isMobile, isLoading])
+	}, [isRegistered, isMobile, isLoading, pageText])
 
 	if (isLoading) {
 		return (

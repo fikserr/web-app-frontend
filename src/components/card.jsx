@@ -26,9 +26,9 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 				<img
 					src={product.imageUrl ? product.imageUrl : NoImage}
 					alt={
-						product.name.length > 50
-							? product.name.slice(0, 50) + '…'
-							: product.name
+						(product.name || '').length > 50
+							? (product.name || '').slice(0, 50) + '…'
+							: (product.name || '')
 					}
 					className='w-full h-36 object-contain rounded-xl cursor-pointer'
 					onClick={() => setIsModalOpen(true)}
@@ -40,9 +40,9 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 							registered ? ' items-center ' : 'items-start'
 						} `}
 					>
-						{product.name.length > 20
-							? product.name.slice(0, 20) + '…'
-							: product.name}
+						{(product.name || '').length > 20
+							? (product.name || '').slice(0, 20) + '…'
+							: (product.name || '')}
 					</h3>
 				</div>
 
@@ -54,7 +54,7 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 									maximumFractionDigits: 4,
 								})
 								.replace(/\s/g, ' ')}{' '}
-							{product.prices?.[0]?.currencyname}
+							{product.prices?.[0]?.currency?.name}
 						</p>
 					) : null}
 

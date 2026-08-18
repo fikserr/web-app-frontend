@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 // import { ca } from "date-fns/locale/ca";
 
 export default function useCategories(userId, page = 1, pageSize = 10) {
@@ -9,30 +9,41 @@ export default function useCategories(userId, page = 1, pageSize = 10) {
   const [error, setError] = useState(null);
   const [registered, setRegistered] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const USERNAME = import.meta.env.VITE_API_USERNAME;
-  const PASSWORD = import.meta.env.VITE_API_PASSWORD;
-
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-
-    axios
-      .get(`${API_BASE_URL}/category`, {
-        auth: { username: USERNAME, password: PASSWORD },
-        params: { page, pageSize, userId },
+    const controller = new AbortController();
+    api
+      .get('/catalogs/categories/images', {
+        params: {
+          page,
+          pageSize,
+          sortBy: 'code',
+          sortOrder: 'desc',
+          search: '',
+          parent: '',
+          includeParents: false,
+          userId,
+          ids: '',
+        },
+        signal: controller.signal,
       })
       .then((res) => {
-        setCategories(res.data?.data || []); // faqat massiv
-        setMeta(res.data?.meta || null); // meta alohida
-        setLoading(false);
-        setRegistered(res.data?.registered || false)
+        const rows = res.data?.content || res.data?.data?.content || res.data?.items || []
+        setCategories(rows)
+        setMeta(res.data?.meta || res.data?.data?.meta || null)
+        setLoading(false)
+        setRegistered(res.data?.registered || res.data?.data?.registered || false)
       })
       .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [userId, page, pageSize]);
+        if (err.name !== "CanceledError") {
+          setError(err.message)
+          setLoading(false)
+        }
+      })
+
+    return () => controller.abort();
+  }, [userId, page, pageSize])
 
   return { categories, meta, loading, error , registered };
 }

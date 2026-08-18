@@ -7,7 +7,6 @@ import Basket from '../pages/basket'
 import Report from '../pages/report'
 import Categories from '../pages/categories'
 import Detail from '../pages/detail'
-import Formalize from '../pages/formalize'
 import OrdersPage from '../pages/orderList';
 
 const Router = () => {
@@ -19,8 +18,7 @@ const Router = () => {
                 <Route path='/basket' element={<Basket/>}/>
                 <Route path='/report' element={<Report/>}/>
                 <Route path='/home' element={<Home />}/>
-                <Route path='/detail' element={<Detail/>}/>
-                <Route path='/formalize' element={<Formalize/>}/>
+                <Route path='/detail/:id' element={<Detail/>}/>
                 <Route path='/orderList' element={<OrdersPage/>}/>
             </Route>
         )

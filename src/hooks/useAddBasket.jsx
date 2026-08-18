@@ -14,7 +14,7 @@ const useAddBasket = () => {
   }, [counts]);
 
   const updateQuantity = (product, qty) => {
-    const productId = product.Id; // 🔑 endi Id ishlatyapmiz
+    const productId = product.id; // 🔑 endi id ishlatyapmiz
 
     setCounts((prev) => {
       const updated = { ...prev };
@@ -27,6 +27,7 @@ const useAddBasket = () => {
         productId,
         count: qty,
         price: Number(product.prices?.[0]?.price || 0),
+        currencyName: product.prices?.[0]?.currency?.name || 'USD',
         name: product.name,
         image: product.imageUrl || null,
       };

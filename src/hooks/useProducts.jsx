@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "../lib/api";
 
 export default function useProducts({
   page = 1,
@@ -11,37 +11,45 @@ export default function useProducts({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [registered, setRegistered] = useState(false);
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  // 🔑 Login parolni .env dan olamiz
-  const USERNAME = import.meta.env.VITE_API_USERNAME;
-  const PASSWORD = import.meta.env.VITE_API_PASSWORD;
+  // using centralized api client
 
   const fetchProducts = useCallback(
     async (signal) => {
       if (!userId || !categoryId) return; // ❌ keraksiz requestni to‘xtatamiz
       setLoading(true);
       try {
-        const res = await axios.get(`${API_BASE_URL}/product`, {
-          params: { page, pageSize, userId, categoryId },
-          signal,
-          auth: {
-            username: USERNAME,
-            password: PASSWORD,
+        const res = await api.get(`/catalogs/products/full`, {
+          params: {
+            page,
+            pageSize,
+            sortBy: 'code',
+            sortOrder: 'desc',
+            search: '',
+            parent: '',
+            includeParents: false,
+            userId,
+            ids: '',
+            categoriyIds: categoryId,
           },
+          signal,
         });
-        setRegistered(res.data?.registered || false);
-        setProducts(res.data?.data || []);
+        console.log('[Products] API Response:', res.data);
+        setRegistered(res.data?.data?.registered || false);
+        const productsData = res.data?.data?.content || [];
+        console.log('[Products] Extracted products:', productsData);
+        setProducts(productsData);
         setError(null);
       } catch (err) {
         if (err.name !== "CanceledError") {
           setError(err.message);
+          console.error('[Products] Fetch error:', err);
         }
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     },
-    [API_BASE_URL, USERNAME, PASSWORD, page, pageSize, userId, categoryId]
+    [page, pageSize, userId, categoryId]
   );
 
   useEffect(() => {

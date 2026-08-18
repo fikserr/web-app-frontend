@@ -1,4 +1,35 @@
 import { useEffect, useState } from 'react'
+import api from '../lib/api'
+
+const normalizeOrderPayload = payload => {
+	const root = payload?.data ?? payload
+	const list =
+		(Array.isArray(root?.content) && root.content) ||
+		(Array.isArray(root?.items) && root.items) ||
+		(Array.isArray(root?.orders) && root.orders) ||
+		(Array.isArray(root?.documents) && root.documents) ||
+		(Array.isArray(root?.results) && root.results) ||
+		(Array.isArray(root) && root) ||
+		[]
+
+	const metaSource = payload?.meta ?? root?.meta ?? payload?.pagination ?? root?.pagination ?? {}
+	const total =
+		Number(metaSource.total ?? root?.total ?? list.length ?? 0) || 0
+	const currentPage =
+		Number(metaSource.currentPage ?? metaSource.current_page ?? payload?.page ?? root?.page ?? 1) || 1
+	const pageSizeFromMeta = Number(metaSource.pageSize ?? metaSource.per_page ?? 1) || 1
+	const lastPage =
+		Number(metaSource.lastPage ?? metaSource.last_page ?? Math.max(1, Math.ceil(total / pageSizeFromMeta))) || 1
+
+	return {
+		orders: list,
+		meta: {
+			currentPage,
+			lastPage,
+			total,
+		},
+	}
+}
 
 function useOrderList(userId, page, pageSize) {
 	const [orders, setOrders] = useState([])
@@ -10,12 +41,14 @@ function useOrderList(userId, page, pageSize) {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
 
-	const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-	const USERNAME = import.meta.env.VITE_API_USERNAME
-	const PASSWORD = import.meta.env.VITE_API_PASSWORD
-
 	useEffect(() => {
-		if (!userId) return;
+		if (!userId) {
+			setOrders([])
+			setMeta({ currentPage: 1, lastPage: 1, total: 0 })
+			setLoading(false)
+			setError(null)
+			return
+		}
 
 		const controller = new AbortController()
 		const { signal } = controller
@@ -25,69 +58,57 @@ function useOrderList(userId, page, pageSize) {
 				setLoading(true)
 				setError(null)
 
-				const authHeader = 'Basic ' + btoa(`${USERNAME}:${PASSWORD}`)
+				const query = {
+					page,
+					pageSize,
+					userId,
+					sortBy: 'date',
+					sortOrder: 'desc',
+				}
 
-				const res = await fetch(
-					`${API_BASE_URL}/order?page=${page}&pageSize=${pageSize}&userId=${userId}`,
-					{
-						method: 'GET',
-						signal,
-						headers: {
-							Authorization: authHeader,
-						},
+				const endpoints = ['/documents/orders', '/order']
+				let lastErr = null
+
+				for (const endpoint of endpoints) {
+					try {
+						const res = await api.get(endpoint, {
+							params: query,
+							signal,
+						})
+
+						const { orders: normalizedOrders, meta: normalizedMeta } =
+							normalizeOrderPayload(res.data)
+
+						setOrders(normalizedOrders)
+						setMeta(normalizedMeta)
+						return
+					} catch (err) {
+						if (err?.name === 'AbortError') throw err
+						lastErr = err
+						if (err?.response?.status !== 404 && err?.response?.status !== 405) {
+							throw err
+						}
 					}
-				)
-
-				if (!res.ok) {
-					console.log('nug');
-					throw new Error(`HTTP error! status: ${res.status}`)
 				}
 
-				const json = await res.json()
-
-				setOrders(json.data || [])
-
-				// Laravel-like pagination structure with fallbacks
-				if (json.meta) {
-					const currentPageFromApi = json.meta.current_page ?? page ?? 1
-					const totalFromApi =
-						json.meta.total ?? (Array.isArray(json.data) ? json.data.length : 0)
-					const lastPageFromApi = json.meta.last_page
-					const computedLastPage = Math.max(
-						1,
-						Math.ceil((Number(totalFromApi) || 0) / (Number(pageSize) || 1))
-					)
-					setMeta({
-						currentPage: Number(currentPageFromApi) || 1,
-						lastPage: Number(lastPageFromApi) || computedLastPage,
-						total: Number(totalFromApi) || 0,
-					})
-				} else {
-					const totalLocal = Array.isArray(json.data) ? json.data.length : 0
-					const computedLastPage = Math.max(
-						1,
-						Math.ceil((Number(totalLocal) || 0) / (Number(pageSize) || 1))
-					)
-					setMeta({
-						currentPage: Number(page) || 1,
-						lastPage: computedLastPage,
-						total: Number(totalLocal) || 0,
-					})
-				}
+				throw lastErr || new Error('Buyurtmalarni olishda xatolik yuz berdi')
 			} catch (err) {
-				if (err.name !== 'AbortError') {
-					setError(err.message || 'Xatolik yuz berdi')
+				if (err?.name !== 'AbortError') {
+					setError(err?.message || 'Xatolik yuz berdi')
+					setOrders([])
+					setMeta({ currentPage: Number(page) || 1, lastPage: 1, total: 0 })
 				}
 			} finally {
-				setLoading(false)
+				if (!controller.signal.aborted) {
+					setLoading(false)
+				}
 			}
 		}
 
 		fetchOrders()
 
-		// cleanup old request
 		return () => controller.abort()
-	}, [userId, page, pageSize, API_BASE_URL])
+	}, [userId, page, pageSize])
 
 	return { orders, meta, loading, error }
 }

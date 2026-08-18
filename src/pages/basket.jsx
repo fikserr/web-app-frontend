@@ -9,14 +9,15 @@ import PaymentModal from '../components/PaymentModal'
 import useAddBasket from '../hooks/useAddBasket'
 import useBasket from '../hooks/useBasket'
 import useOrder from '../hooks/useOrder'
+import { getUserId } from '../lib/auth'
 
 const Basket = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
 
 	const [showCommentModal, setShowCommentModal] = useState(false)
 	const [showPaymentModal, setShowPaymentModal] = useState(false)
 	const [showErrorModal, setShowErrorModal] = useState(false)
 	const [comment, setComment] = useState('')
+	const [submitting, setSubmitting] = useState(false)
 
 	const { basket, setBasket, clearBasket } = useBasket()
 	const { createOrder } = useOrder()
@@ -25,23 +26,59 @@ const Basket = () => {
 	const handleConfirmOrder = async paymentType => {
 		if (!basket.length) return
 
-		const tzOffset = 5 * 60
-		const localDate = new Date(Date.now() + tzOffset * 60 * 1000)
-		const formatted = localDate.toISOString().slice(0, 19)
+		const generateUuidFallback = () => {
+			if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+				return crypto.randomUUID()
+			}
 
-		const orderData = {
-			userId: String(tgUser?.id),
-			UUID: crypto.randomUUID(),
-			date: formatted,
-			comment: comment?.trim() || '',
-			basket: basket.map(item => ({
-				productId: item.Id,
-				measureId: item.measures?.[0]?.Id,
-				quantity: counts[item.Id]?.count || 0,
-				price: item.price,
-			})),
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
+				const random = Math.random() * 16 | 0
+				const value = char === 'x' ? random : (random & 0x3 | 0x8)
+				return value.toString(16)
+			})
 		}
 
+		const orderData = {
+			userId: String(getUserId() || ''),
+			UUID: generateUuidFallback(),
+			comment: comment?.trim() || '',
+			saleType: 'sum',
+			products: basket.map(item => {
+				const productId = item.productId || item.Id || item.id;
+				const quantity = counts[productId]?.count || 0;
+				const price = Number(item.price || item.prices?.[0]?.price || 0);
+				const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
+
+				return {
+					product: {
+						id: productId,
+						name: item.name || item.productName || 'Mahsulot',
+					},
+					bundleItems: [],
+					quantities: [
+						{
+							stock: { id: '09fda8f3-6098-11f0-9fee-b48c9d79c2ce', name: 'Asosiy sklad' },
+							quantity,
+							measure: {
+								name: measure.name || 'шт',
+								id: measure.Id || measure.id || '09fda8fe-6098-11f0-9fee-b48c9d79c2ce',
+							},
+							remainder: 0,
+							amount: Number((quantity * price).toFixed(4)),
+						},
+					],
+					price: Number(price.toFixed(4)),
+					oldPrice: Number((item.oldPrice ?? price).toFixed(4)),
+					currency: {
+						name: item.currencyName || item.prices?.[0]?.currency?.name || 'USD',
+						id: item.currencyId || item.prices?.[0]?.currency?.id || '',
+					},
+				};
+			}),
+		}
+
+		if (submitting) return
+		setSubmitting(true)
 		try {
 			if (paymentType === 'click') {
 				const amount = basket.reduce(
@@ -49,10 +86,8 @@ const Basket = () => {
 					0,
 				)
 
-				const res = await axios.post(
-					'https://clickpayment-production.up.railway.app/api/click/create-payment',
-					{ order_id: orderData.UUID, amount },
-				)
+				const CLICK_PAYMENT_URL = import.meta.env.VITE_CLICK_PAYMENT_URL || 'https://clickpayment-production.up.railway.app/api/click/create-payment'
+				const res = await axios.post(CLICK_PAYMENT_URL, { order_id: orderData.UUID, amount })
 
 				if (res.data?.success && res.data?.paymentUrl) {
 					window.location.href = res.data.paymentUrl
@@ -75,7 +110,6 @@ const Basket = () => {
 			await createOrder(orderData)
 
 			clearBasket()
-			localStorage.removeItem('basket')
 			setShowPaymentModal(false)
 			setShowCommentModal(false)
 
@@ -93,7 +127,10 @@ const Basket = () => {
 			console.error('❌ Buyurtma xatolik:', err)
 			setShowErrorModal(true)
 			setShowPaymentModal(false)
-			toast.error("Buyurtma yuborishda muammo yuz berdi, qayta urinib ko'ring", {
+			const backendMessage = Array.isArray(err?.response?.data?.errorMessage)
+				? err.response.data.errorMessage.join('; ')
+				: err?.response?.data?.errorMessage
+			toast.error(backendMessage || "Buyurtma yuborishda muammo yuz berdi, qayta urinib ko'ring", {
 				style: {
 					background: '#ef4444',
 					color: '#fff',
@@ -103,6 +140,8 @@ const Basket = () => {
 					fontSize: '16px',
 				},
 			})
+		} finally {
+			setSubmitting(false)
 		}
 	}
 
@@ -128,18 +167,18 @@ const Basket = () => {
 								<img
 									src={item.image || noImage}
 									alt={
-										item.name.length > 20
-											? item.name.slice(0, 20) + '…'
-											: item.name
+										(item.name || '').length > 20
+											? (item.name || '').slice(0, 20) + '…'
+											: (item.name || '')
 									}
 									className='w-full aspect-square object-contain rounded-xl'
 								/>
 							</div>
 							<div className='w-2/3'>
 								<p className='text-sm font-bold text-black h-[40px] max-h-[40px] dark:text-white'>
-									{item.name.length > 48
-										? item.name.slice(0, 48) + '…'
-										: item.name}
+									{(item.name || '').length > 48
+										? (item.name || '').slice(0, 48) + '…'
+										: (item.name || '')}
 								</p>
 								<div className='flex items-end justify-between'>
 									<div className='w-full'>
@@ -223,7 +262,6 @@ const Basket = () => {
 				setShowPaymentModal={setShowPaymentModal}
 				basket={basket}
 				counts={counts}
-				handleConfirmOrder={handleConfirmOrder}
 			/>
 
 			<PaymentModal

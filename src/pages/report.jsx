@@ -11,11 +11,12 @@ import RegisterBanner from '../components/RegisterBanner'
 import useAktSverka from '../hooks/useAktSverka'
 import useBalance from '../hooks/useBalance'
 import getDocConfig from '../hooks/useDocConfig' // ✅ renamed import
+import { getUserId } from '../lib/auth'
 
 const Report = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	const userId = getUserId()
 
-	const { balance, loading, error } = useBalance(tgUser?.id)
+	const { balance, loading, error } = useBalance(userId)
 	const [dateRange, setDateRange] = useState({ from: null, to: null })
 	const [showAkt, setShowAkt] = useState(false)
 
@@ -24,7 +25,7 @@ const Report = () => {
 		loading: aktLoading,
 		error: aktError,
 	} = useAktSverka(
-		tgUser?.id,
+		userId,
 		showAkt && dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null,
 		showAkt && dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null
 	)
@@ -106,14 +107,20 @@ const Report = () => {
 			{/* Button */}
 			<Button
 				className='my-1 w-full h-11 max-h-11 bg-[rgb(141,119,229)] text-white'
-				disabled={!dateRange.from || !dateRange.to}
+				disabled={!dateRange.from || !dateRange.to || aktLoading}
 				onClick={() => setShowAkt(true)}
 			>
-				Hisobotni ko‘rish
+				{aktLoading ? 'Yuklanmoqda...' : 'Hisobotni ko‘rish'}
 			</Button>
 
+			{showAkt && aktError && (
+				<p className='text-red-600 text-sm mt-2'>
+					Hisobotni yuklashda xatolik yuz berdi. Qayta urinib ko‘ring.
+				</p>
+			)}
+
 			{/* Asosiy kontent */}
-			{showAkt && akt?.data && (
+			{showAkt && akt?.data?.content && (
 				<div className='bg-slate-100 p-3 rounded-lg mt-2 mb-10 dark:bg-transparent'>
 					<h2 className='font-semibold text-lg mb-3'>To‘lovlar va qarzlar</h2>
 
@@ -139,7 +146,7 @@ const Report = () => {
 										{i < 2 ? '(uzs)' : '($)'}
 									</p>
 									<b className='block font-bold text-lg'>
-										{akt.data.initial[key]}
+										{akt.data.content.initial[key]}
 									</b>
 								</div>
 							))}
@@ -148,7 +155,7 @@ const Report = () => {
 
 					{/* 🔸 Har bir hujjat */}
 					<div className='flex flex-col gap-4'>
-						{[...akt.data.list]
+						{[...akt.data.content.list]
 							.sort((a, b) => new Date(a.date) - new Date(b.date))
 							.map((item, idx) => {
 								const { hiddenFields, bgColor } = getDocConfig(item.document)
@@ -240,7 +247,7 @@ const Report = () => {
 										{i < 2 ? '(uzs)' : '($)'}
 									</p>
 									<b className='block font-bold text-lg'>
-										{akt.data.last[key]}
+										{akt.data.content.last[key]}
 									</b>
 								</div>
 							))}

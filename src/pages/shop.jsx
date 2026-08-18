@@ -6,10 +6,11 @@ import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
 import useProducts from '../hooks/useProducts'
+import { getUserId } from '../lib/auth'
 import nothingFound from '../icons/nothingFound.gif'
 
 const Shop = () => {
-	const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user
+	const userId = getUserId()
 	const navigate = useNavigate()
 	const [selectedCategory, setSelectedCategory] = useState(null)
 	const [searchTerm, setSearchTerm] = useState('')
@@ -31,21 +32,26 @@ const Shop = () => {
 	} = useProducts({
 		page: 1,
 		pageSize: 4,
-		userId: tgUser?.id,
-		categoryId: selectedCategory?.Id,
+		userId: userId,
+		categoryId: selectedCategory?.id,
 	})
 
-	const { counts, updateQuantity } = useAddBasket(tgUser?.id)
+	const { counts, updateQuantity } = useAddBasket(userId)
 
 	const filteredProducts = useMemo(() => {
 		if (!Array.isArray(products)) return []
 		if (!searchTerm.trim()) return products
 		return products.filter(p =>
-			(p?.Name || p?.name || '')
+			(p?.name || '')
 				.toLowerCase()
 				.includes(searchTerm.toLowerCase())
 		)
 	}, [products, searchTerm])
+
+	console.log('[Shop] Products:', products);
+	console.log('[Shop] Loading:', productsLoading);
+	console.log('[Shop] Error:', productsError);
+	console.log('[Shop] Filtered Products:', filteredProducts);
 
 	return (
 		<div className='w-full'>
@@ -99,9 +105,9 @@ const Shop = () => {
 								  ))
 								: filteredProducts.map(p => (
 										<Card
-											key={p.Id}
+											key={p.id}
 											product={p}
-											productInCart={counts[p.Id]}
+											productInCart={counts[p.id]}
 											onUpdate={updateQuantity}
 											loading={false}
 											registered={registered}

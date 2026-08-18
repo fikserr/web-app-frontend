@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import Iphone from '../assets/iphone3.png';
-import Iphone2 from '../assets/iphone2.png';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import api from '../lib/api'
+import useAddBasket from '../hooks/useAddBasket'
+import { toast } from 'sonner'
+import NoImage from '../assets/no-photo.jpg'
 
 const Detail = () => {
     const [isBottom, setIsBottom] = useState(false);
+    const [product, setProduct] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const { id } = useParams()
+    const { counts, updateQuantity } = useAddBasket()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -19,52 +25,66 @@ const Detail = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    useEffect(() => {
+        if (!id) return
+        let cancelled = false
+        setLoading(true)
+        api.get(`/product/${id}`).then(res => {
+            if (cancelled) return
+            const p = res.data?.data || res.data || null
+            setProduct(p)
+        }).catch(async () => {
+            // fallback to query by id
+            try {
+                const r2 = await api.get('/product', { params: { id } })
+                const p2 = r2.data?.data?.[0] || r2.data?.data || r2.data || null
+                if (!cancelled) setProduct(p2)
+            } catch (e) {
+                console.error('Product fetch error', e)
+            }
+        }).finally(() => {
+            if (!cancelled) setLoading(false)
+        })
+        return () => { cancelled = true }
+    }, [id])
+
+    if (loading) return <div className='py-24 text-center'>Yuklanmoqda...</div>
+    if (!product) return <div className='py-24 text-center'>Mahsulot topilmadi</div>
+
+    const addToCart = () => {
+        try {
+            const current = counts[product.id]?.count || 0
+            updateQuantity(product, current + 1)
+            toast.success('Mahsulot savatga qo‘shildi')
+        } catch (e) {
+            console.error('Add to cart error', e)
+            toast.error('Savatga qo‘shishda xatolik')
+        }
+    }
+
     return (
         <div className='mb-32 grid sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:px-5 xl:px-10 mt-24'>
             <div className='grid grid-cols-2 sm:grid-cols-1 md:grid-cols-2 sm:col-span-1 md:col-span-2'>
-                <img src={Iphone} alt="img1" className='mx-auto w-full rounded-xl' />
-                <img src={Iphone2} alt="img2" className='mx-auto w-full rounded-xl' />
+                <img src={product.imageUrl || NoImage} alt={product.name} className='mx-auto w-full rounded-xl' />
+                <img src={product.imageUrl || NoImage} alt={product.name} className='mx-auto w-full rounded-xl' />
             </div>
             <div className='px-2 sm:col-span-2 md:col-span-1 lg:col-span-2'>
-                <h2 className='text-xl font-bold mt-2'>iPhone 14 Pro Max</h2>
-                <p className='text-4xl font-bold my-3'>7 860 000 UZS</p>
+                <h2 className='text-xl font-bold mt-2'>{product.name}</h2>
+                <p className='text-4xl font-bold my-3'>
+                    {Number(product.prices?.[0]?.price || product.price || 0).toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm
+                </p>
                 <p className='text-slate-500'>
-                    iPhone 14 Pro Max — kuch, uslub va texnologiyaning mukammal uyg‘unligi...
+                    {product.description || product.shortDescription || ''}
                 </p>
 
                 <h3 className='font-semibold text-xl mt-5'>Tavsifi</h3>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Operativ xotira</p>
-                    <p>6 GB</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Doimiy xotira</p>
-                    <p>128 GB</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Kamera</p>
-                    <p>Asosiy-48MP / Old-12MP</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Akkumulyator sig‘imi</p>
-                    <p>4323 mAh</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>SIM-karta</p>
-                    <p>eSIM</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Korpus materiali</p>
-                    <p>Mustahkam metall</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Protsessor</p>
-                    <p>Bionic</p>
-                </div>
-                <div className='flex justify-between px-2 border-b-2 pb-2'>
-                    <p className='text-slate-500'>Displey</p>
-                    <p>6.7” Super Retina XDR</p>
-                </div>
+                {/* render basic metadata when available */}
+                {(product.attributes || []).map(attr => (
+                    <div key={attr.name} className='flex justify-between px-2 border-b-2 pb-2'>
+                        <p className='text-slate-500'>{attr.name}</p>
+                        <p>{attr.value}</p>
+                    </div>
+                ))}
             </div>
             {isBottom && (
                 <>
@@ -74,7 +94,7 @@ const Detail = () => {
                     >
                         Xaridlarga qaytish
                     </Link>
-                    <button className='bg-[rgb(22,113,98)] w-full py-2 text-white rounded-md fixed bottom-0 right-0 left-0'>
+                    <button onClick={addToCart} className='bg-[rgb(22,113,98)] w-full py-2 text-white rounded-md fixed bottom-0 right-0 left-0'>
                         Savatga Qo'shish
                     </button>
                 </>
