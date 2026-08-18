@@ -58,40 +58,33 @@ function useOrderList(userId, page, pageSize) {
 				setLoading(true)
 				setError(null)
 
+				// full query shape confirmed against the Postman collection's "Orders Copy > list"
+				// request — the filter fields are empty by default (no filter applied)
 				const query = {
 					page,
 					pageSize,
 					userId,
 					sortBy: 'date',
 					sortOrder: 'desc',
+					ids: '',
+					statusIds: '',
+					startDate: '',
+					endDate: '',
+					customerIds: '',
+					staffIds: '',
 				}
 
-				const endpoints = ['/documents/orders', '/order']
-				let lastErr = null
+				const res = await api.get('/documents/orders', {
+					params: query,
+					signal,
+				})
 
-				for (const endpoint of endpoints) {
-					try {
-						const res = await api.get(endpoint, {
-							params: query,
-							signal,
-						})
+				const { orders: normalizedOrders, meta: normalizedMeta } =
+					normalizeOrderPayload(res.data)
 
-						const { orders: normalizedOrders, meta: normalizedMeta } =
-							normalizeOrderPayload(res.data)
-
-						setOrders(normalizedOrders)
-						setMeta(normalizedMeta)
-						return
-					} catch (err) {
-						if (err?.name === 'AbortError') throw err
-						lastErr = err
-						if (err?.response?.status !== 404 && err?.response?.status !== 405) {
-							throw err
-						}
-					}
-				}
-
-				throw lastErr || new Error('Buyurtmalarni olishda xatolik yuz berdi')
+				setOrders(normalizedOrders)
+				setMeta(normalizedMeta)
+				return
 			} catch (err) {
 				if (err?.name !== 'AbortError') {
 					setError(err?.message || 'Xatolik yuz berdi')
