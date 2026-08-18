@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { resolveDisplayPrice } from "../lib/pricing";
 
 const STORAGE_KEY = "basket_counts";
 
@@ -22,12 +23,15 @@ const useAddBasket = () => {
         delete updated[productId];
         return updated;
       }
+      const displayPrice = resolveDisplayPrice(product);
       updated[productId] = {
         ...product,
         productId,
         count: qty,
-        price: Number(product.prices?.[0]?.price || 0),
-        currencyName: product.prices?.[0]?.currency?.name || 'USD',
+        price: displayPrice.price,
+        oldPrice: displayPrice.oldPrice,
+        currencyName: displayPrice.currency.name,
+        currencyId: displayPrice.currency.id,
         name: product.name,
         image: product.imageUrl || null,
       };

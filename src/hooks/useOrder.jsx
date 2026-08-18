@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../lib/api";
 import { getUserId, decodeJwtPayload } from "../lib/auth";
+import { resolveDisplayPrice } from "../lib/pricing";
 
 const safeNumber = (value, fallback = 0) => {
   const num = Number(value ?? fallback);
@@ -135,14 +136,12 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
     counts[productId]?.count ?? item.quantity ?? item.qty ?? item.quantities?.[0]?.quantity ?? 0,
     0,
   );
-  const price = safeNumber(
-    item.price ?? item.prices?.[0]?.price ?? item.product?.price ?? 0,
-    0,
-  );
-  const oldPrice = safeNumber(
-    item.oldPrice ?? item.prices?.[0]?.oldPrice ?? price,
-    price,
-  );
+  // basket items already carry a resolved price/currency (see useAddBasket.jsx); this
+  // only re-resolves from a raw prices[] array as a defensive fallback, and — like every
+  // other price lookup in this app — never falls back to a USD-denominated entry
+  const rawPriceFallback = item.price == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
+  const price = safeNumber(item.price ?? rawPriceFallback?.price ?? item.product?.price ?? 0, 0);
+  const oldPrice = safeNumber(item.oldPrice ?? rawPriceFallback?.oldPrice ?? price, price);
   const productName = item.name || item.productName || item.product?.name || 'Mahsulot';
   const quantityStock = item.quantities?.[0]?.stock || item.stock || fallbackStock || { id: '', name: 'Asosiy sklad' };
   const measure = resolveMeasureInfo(item);
@@ -171,8 +170,8 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
     price: Number(price.toFixed(4)),
     oldPrice: Number(oldPrice.toFixed(4)),
     currency: {
-      name: item.currencyName || item.currency?.name || item.prices?.[0]?.currency?.name || 'USD',
-      id: item.currencyId || item.currency?.id || item.prices?.[0]?.currency?.id || '',
+      name: item.currencyName || item.currency?.name || rawPriceFallback?.currency?.name || 'UZS',
+      id: item.currencyId || item.currency?.id || rawPriceFallback?.currency?.id || '',
     },
   };
 }

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import NoImage from '../assets/no-photo.jpg'
+import { resolveDisplayPrice } from '../lib/pricing'
 import { Skeleton } from './ui/skeleton'
 
 const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
+	const displayPrice = loading ? null : resolveDisplayPrice(product)
 
 	if (loading) {
 		return (
@@ -49,12 +51,11 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 				<div className='pt-2'>
 					{registered ? (
 						<p className='text-xs font-bold dark:text-white'>
-							{Number(product.prices?.[0]?.price)
-								.toLocaleString('fr-FR', {
-									maximumFractionDigits: 4,
-								})
-								.replace(/\s/g, ' ')}{' '}
-							{product.prices?.[0]?.currency?.name}
+							{displayPrice.price != null
+								? `${displayPrice.price
+										.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+										.replace(/\s/g, ' ')} ${displayPrice.currency.name}`
+								: 'Narx belgilanmagan'}
 						</p>
 					) : null}
 

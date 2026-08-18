@@ -4,6 +4,7 @@ import api from '../lib/api'
 import useAddBasket from '../hooks/useAddBasket'
 import { toast } from 'sonner'
 import NoImage from '../assets/no-photo.jpg'
+import { resolveDisplayPrice } from '../lib/pricing'
 
 const Detail = () => {
     const [isBottom, setIsBottom] = useState(false);
@@ -51,6 +52,8 @@ const Detail = () => {
     if (loading) return <div className='py-24 text-center'>Yuklanmoqda...</div>
     if (!product) return <div className='py-24 text-center'>Mahsulot topilmadi</div>
 
+    const displayPrice = resolveDisplayPrice(product)
+
     const addToCart = () => {
         try {
             const current = counts[product.id]?.count || 0
@@ -71,7 +74,9 @@ const Detail = () => {
             <div className='px-2 sm:col-span-2 md:col-span-1 lg:col-span-2'>
                 <h2 className='text-xl font-bold mt-2'>{product.name}</h2>
                 <p className='text-4xl font-bold my-3'>
-                    {Number(product.prices?.[0]?.price || product.price || 0).toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm
+                    {displayPrice.price != null
+                        ? `${displayPrice.price.toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm`
+                        : 'Narx belgilanmagan'}
                 </p>
                 <p className='text-slate-500'>
                     {product.description || product.shortDescription || ''}

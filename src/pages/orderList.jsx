@@ -85,13 +85,15 @@ const OrderList = () => {
 			{orders.length > 0 ? (
 				orders.map(order => {
 					const orderId = order.UUID ?? order.Id ?? order.id ?? order.orderId ?? order.code ?? order.number
+					// the list endpoint only returns a count, not the actual line items (see productsCount below)
 					const productList = Array.isArray(order.productList)
 						? order.productList
 						: Array.isArray(order.products)
 							? order.products
 							: []
-					const orderTotal = Number(order.totalSum ?? order.totalVal ?? order.total ?? order.sum ?? order.amount ?? 0)
-					const currency = order.currencyName ?? (order.totalSum ? 'UZS' : 'USD')
+					const productsCount = Number(order.productsCount ?? productList.length ?? 0)
+					// amountToPaySum is the UZS total; USD is never shown to the customer
+					const orderTotal = Number(order.amountToPaySum ?? 0)
 					const statusLabel =
 						order.status && typeof order.status === 'object'
 							? order.status.name ?? order.status.id ?? 'Noma’lum'
@@ -115,7 +117,7 @@ const OrderList = () => {
 												maximumFractionDigits: 4,
 											})
 											.replace(/\s/g, ' ')}{' '}
-										{currency}
+										UZS
 									</p>
 									<p>
 										Sana:{' '}
@@ -152,6 +154,10 @@ const OrderList = () => {
 												</div>
 											</div>
 										))
+									) : productsCount > 0 ? (
+										<p className='text-sm text-gray-500'>
+											Bu buyurtmada {productsCount} ta mahsulot bor — batafsil ro'yxat hozircha mavjud emas
+										</p>
 									) : (
 										<p className='text-sm text-gray-500'>Mahsulotlar mavjud emas</p>
 									)}

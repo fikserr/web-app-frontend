@@ -10,6 +10,7 @@ import useAddBasket from '../hooks/useAddBasket'
 import useBasket from '../hooks/useBasket'
 import useOrder from '../hooks/useOrder'
 import { getUserId } from '../lib/auth'
+import { resolveDisplayPrice } from '../lib/pricing'
 
 const Basket = () => {
 
@@ -46,7 +47,10 @@ const Basket = () => {
 			products: basket.map(item => {
 				const productId = item.productId || item.Id || item.id;
 				const quantity = counts[productId]?.count || 0;
-				const price = Number(item.price || item.prices?.[0]?.price || 0);
+				// item.price is already resolved (see useAddBasket.jsx); this only re-resolves
+				// from a raw prices[] array as a defensive fallback, never falling back to USD
+				const rawPriceFallback = item.price == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
+				const price = Number(item.price ?? rawPriceFallback?.price ?? 0);
 				const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
 
 				return {
@@ -70,8 +74,8 @@ const Basket = () => {
 					price: Number(price.toFixed(4)),
 					oldPrice: Number((item.oldPrice ?? price).toFixed(4)),
 					currency: {
-						name: item.currencyName || item.prices?.[0]?.currency?.name || 'USD',
-						id: item.currencyId || item.prices?.[0]?.currency?.id || '',
+						name: item.currencyName || rawPriceFallback?.currency?.name || 'UZS',
+						id: item.currencyId || rawPriceFallback?.currency?.id || '',
 					},
 				};
 			}),
@@ -184,10 +188,11 @@ const Basket = () => {
 									<div className='w-full'>
 										<div className='flex items-center justify-between w-full'>
 											<p className='text-sm font-bold mt-1 text-[rgb(165,150,225)]'>
-												{Number(item.price)
-													.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
-													.replace(/\s/g, ' ')}{' '}
-												so'm
+												{item.price != null
+													? `${Number(item.price)
+															.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+															.replace(/\s/g, ' ')} so'm`
+													: 'Narx belgilanmagan'}
 											</p>
 											<div className='flex justify-between items-center gap-2 mt-2'>
 												<button
@@ -230,11 +235,13 @@ const Basket = () => {
 											</p>
 											<p className='text-gray-500 mt-1 text-sm dark:text-gray-300'>
 												Summa:{' '}
-												{Number(
-													(counts[item.productId]?.count || 0) * item.price,
-												)
-													.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
-													.replace(/\s/g, ' ')}
+												{item.price != null
+													? Number(
+															(counts[item.productId]?.count || 0) * item.price,
+													  )
+															.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+															.replace(/\s/g, ' ')
+													: 'Narx belgilanmagan'}
 											</p>
 										</div>
 									</div>

@@ -174,23 +174,45 @@ export async function loginViaTelegram() {
 }
 
 // Attempt to refresh using stored refresh token. Endpoint path configurable via env `VITE_REFRESH_PATH` (default '/refresh')
-export async function refreshTokenRequest() {
-  const refreshPath = import.meta.env.VITE_REFRESH_PATH || '/refresh'
-  const refreshToken = _refreshToken || localStorage.getItem('refreshToken')
-  if (!refreshToken) throw new Error('No refresh token available')
+//
+// Deduplicated on purpose: on boot with a long-expired token, the proactive refresh
+// (scheduleTokenRefreshFromToken) and the reactive 401 refresh (response interceptor,
+// triggered by whatever request the freshly-mounted page fires first) can both start
+// within milliseconds of each other, both reading the same (old) refreshToken. If the
+// backend rotates/invalidates refresh tokens on use, whichever of the two loses the race
+// gets rejected — and since that loser's failure handler calls setToken(null), it wipes
+// out the token the winner had just successfully written, leaving the app with no token
+// and no refreshToken until the next full reopen. Sharing one in-flight promise means
+// only one network call ever happens per expiry, and every caller sees the same outcome.
+let _refreshPromise = null
 
-  console.log('[Auth] Attempting to refresh access token...')
-  const res = await api.post(refreshPath, { refreshToken })
-  console.log('[Auth] refresh response:', res?.data)
-  const content = res?.data?.data?.content || {}
-  const token = content?.accesToken || res?.data?.accessToken || res?.data?.token
-  const refresh = content?.refreshToken || res?.data?.refreshToken
-  if (token) {
-    console.log('[Auth] ✅ Access token refreshed successfully')
-    console.log('[Auth] refreshed JWT payload:', decodeJwtPayload(token))
-    setToken(token, { refreshToken: refresh })
-  }
-  return { token, refresh }
+export function refreshTokenRequest() {
+  if (_refreshPromise) return _refreshPromise
+
+  _refreshPromise = (async () => {
+    const refreshPath = import.meta.env.VITE_REFRESH_PATH || '/refresh'
+    const refreshToken = _refreshToken || localStorage.getItem('refreshToken')
+    if (!refreshToken) throw new Error('No refresh token available')
+
+    console.log('[Auth] Attempting to refresh access token...')
+    const res = await api.post(refreshPath, { refreshToken })
+    console.log('[Auth] refresh response:', res?.data)
+    const content = res?.data?.data?.content || {}
+    const token = content?.accesToken || res?.data?.accessToken || res?.data?.token
+    const refresh = content?.refreshToken || res?.data?.refreshToken
+    if (token) {
+      console.log('[Auth] ✅ Access token refreshed successfully')
+      console.log('[Auth] refreshed JWT payload:', decodeJwtPayload(token))
+      setToken(token, { refreshToken: refresh })
+    }
+    return { token, refresh }
+  })()
+
+  _refreshPromise.finally(() => {
+    _refreshPromise = null
+  })
+
+  return _refreshPromise
 }
 
 // Response interceptor to try refresh on 401 and retry original request once
