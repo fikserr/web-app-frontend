@@ -6,8 +6,35 @@
 //   - a line starting with 📍 becomes an address row (location icon)
 //   - a line starting with 📞 or ☎️ becomes a phone row (phone icon)
 //   - a line starting with 🕗, 🕒, 🕐 or ⏰ becomes a working-hours row (calendar icon)
+//   - a line that's just three or more dashes (---) splits the text into a new
+//     section — the home page slots the top-products swiper after the 1st section and
+//     the categories swiper after the 2nd, so the text reads: intro → (top products) →
+//     more info → (categories) → contact/rest
 // Emoji can be typed straight into the 1C field with the OS emoji picker (Win+.),
 // no markup/HTML needed.
+const CHUNK_SEPARATOR_RE = /^-{3,}$/
+
+// Splits the raw text field on "---" separator lines into ordered sections, so the home
+// page can interleave dynamic content (top products, categories) between them.
+export function splitHomeTextChunks(raw) {
+  if (!raw || typeof raw !== 'string') return []
+
+  const chunks = []
+  let current = []
+
+  for (const line of raw.split(/\r?\n/)) {
+    if (CHUNK_SEPARATOR_RE.test(line.trim())) {
+      chunks.push(current.join('\n'))
+      current = []
+      continue
+    }
+    current.push(line)
+  }
+  chunks.push(current.join('\n'))
+
+  return chunks.map((c) => c.trim()).filter((c) => c.length > 0)
+}
+
 const ICON_MARKERS = [
   { type: 'location', icons: ['📍', '🏠'] },
   { type: 'phone', icons: ['📞', '☎️', '☎', '📱'] },

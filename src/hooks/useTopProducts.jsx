@@ -18,7 +18,19 @@ export default function useTopProducts({ userId }) {
         });
         console.log('[TopProducts] API Response:', res.data);
         setRegistered(res.data?.data?.registered || false);
-        const productsData = res.data?.data?.content || [];
+        const rawProducts = res.data?.data?.content || [];
+        // this endpoint doesn't return the flat "imageUrl" field the other product
+        // endpoints (e.g. /catalogs/products/full) do and Card.jsx reads — normalize
+        // whichever shape it actually sends (imagesUrl, or an images[] array) into that
+        // same field so Card renders the photo instead of falling back to the placeholder
+        const productsData = rawProducts.map((item) => ({
+          ...item,
+          imageUrl:
+            item.imageUrl ||
+            item.imagesUrl ||
+            (Array.isArray(item.images) && (item.images[0]?.url || item.images[0])) ||
+            null,
+        }));
         setProducts(productsData);
         setError(null);
       } catch (err) {

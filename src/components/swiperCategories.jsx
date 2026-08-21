@@ -29,7 +29,7 @@ const CategorySwiper = ({ categories, handleCategoryClick, loading }) => {
         categories?.map((cat, index) => (
           <SwiperSlide key={index}>
             <div
-              onClick={() => handleCategoryClick(cat.Id)}
+              onClick={() => handleCategoryClick(cat)}
               className={`cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${cat.active
                 ? "text-[rgb(22,113,98)]"
                 : "text-gray-800 dark:text-white"
