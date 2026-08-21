@@ -1,6 +1,6 @@
 import React from 'react'
 import { MdLocationPin, MdLocalPhone } from "react-icons/md";
-import { IoCalendar, IoFlame } from "react-icons/io5";
+import { IoCalendar } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom'
 import Hero from '../assets/hero.png'
 import useAppConfig from '../hooks/useAppConfig'
@@ -85,10 +85,7 @@ const Home = () => {
 
       {(topLoading || topProducts.length > 0) && (
         <div className='mt-10'>
-          <h2 className='flex items-center gap-2 text-2xl font-semibold mb-4'>
-            <IoFlame className='text-orange-500' />
-            Top mahsulotlar
-          </h2>
+          <h2 className='text-2xl font-semibold mb-4'>Top mahsulotlar</h2>
           <TopProductsSwiper
             products={topProducts}
             loading={topLoading}

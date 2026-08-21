@@ -41,6 +41,12 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 				}
 				className='w-full h-36 object-contain rounded-xl cursor-pointer'
 				onClick={goToDetail}
+				onError={e => {
+					// backend sometimes returns a dead/non-image URL (e.g. a folder listing
+					// instead of a photo) — fall back to the placeholder instead of the
+					// browser's broken-image icon
+					if (e.currentTarget.src !== NoImage) e.currentTarget.src = NoImage
+				}}
 			/>
 
 			<div onClick={goToDetail} className='cursor-pointer'>
