@@ -2,6 +2,7 @@ import NoImage from '../assets/no-photo.jpg'
 import { resolveDisplayPrice } from '../lib/pricing'
 import { Skeleton } from './ui/skeleton'
 import { useNavigate } from 'react-router-dom'
+import { FiShoppingCart } from 'react-icons/fi'
 import useAppConfig from '../hooks/useAppConfig'
 
 const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
@@ -102,9 +103,10 @@ const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 						<button
 							disabled={!registered || displayPrice.price == null}
 							onClick={() => onUpdate(product, 1)}
-							className='px-3 py-1 mt-2 bg-[rgb(141,119,229)] disabled:bg-[rgb(79,72,134)] rounded text-black dark:text-white w-full'
+							className='flex items-center justify-center gap-1 mt-2 px-2 py-2 w-full rounded-lg bg-[rgb(141,119,229)] hover:bg-[rgb(126,102,222)] disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white text-xs font-medium leading-tight transition-colors'
 						>
-							Savatga qo'shish
+							<FiShoppingCart className='shrink-0 text-sm' />
+							<span className='truncate'>Savatga qo'shish</span>
 						</button>
 					</div>
 				)}
