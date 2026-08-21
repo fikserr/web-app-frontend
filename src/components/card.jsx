@@ -2,9 +2,13 @@ import NoImage from '../assets/no-photo.jpg'
 import { resolveDisplayPrice } from '../lib/pricing'
 import { Skeleton } from './ui/skeleton'
 import { useNavigate } from 'react-router-dom'
+import useAppConfig from '../hooks/useAppConfig'
 
 const Card = ({ product, productInCart, onUpdate, loading, registered }) => {
 	const navigate = useNavigate()
+	// re-renders once the USD→UZS rate arrives from /config, so products priced only in
+	// USD (see lib/pricing.js) pick up the live rate instead of staying on the fallback
+	useAppConfig()
 	const displayPrice = loading ? null : resolveDisplayPrice(product)
 	// pass the already-fetched product (from /catalogs/products/full, so it already has
 	// everything — description included) via navigation state, so the detail page doesn't

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import Root from './router'
 import './index.css'
 import { loginViaTelegram, scheduleTokenRefreshForExistingToken } from './lib/api'
+import { fetchAppConfig } from './lib/appConfig'
 
 // Telegram WebApp tayyor bo'lishini va userId mavjudligini kutish — userId hech qachon
 // localStorage'ga saqlanmaydi, faqat Telegramning o'zidan olinadi (device/hacked localStorage
@@ -66,6 +67,11 @@ async function boot() {
   } catch (e) {
     console.warn('Auto-login failed:', e)
   }
+
+  // Warm the /config cache (USD→UZS rate + home page title/text) in the background —
+  // pricing.js and the home page read from this shared cache, but first paint shouldn't
+  // wait on it.
+  fetchAppConfig().catch(() => {})
 
   createRoot(document.getElementById('root')).render(
     <Root />

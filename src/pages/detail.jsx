@@ -5,6 +5,7 @@ import useAddBasket from '../hooks/useAddBasket'
 import { toast } from 'sonner'
 import NoImage from '../assets/no-photo.jpg'
 import { resolveDisplayPrice } from '../lib/pricing'
+import useAppConfig from '../hooks/useAppConfig'
 
 const Detail = () => {
     const [isBottom, setIsBottom] = useState(false);
@@ -16,6 +17,8 @@ const Detail = () => {
     const [loading, setLoading] = useState(!location.state?.product)
     const { id } = useParams()
     const { counts, updateQuantity } = useAddBasket()
+    // re-renders once the USD→UZS rate arrives from /config (see card.jsx for why)
+    useAppConfig()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -57,7 +60,9 @@ const Detail = () => {
     if (!product) return <div className='py-24 text-center'>Mahsulot topilmadi</div>
 
     const displayPrice = resolveDisplayPrice(product)
-    const description = product.description || product.shortDescription || product.desc || product.opisanie || product.note || ''
+    // "info" is the canonical description field returned by /catalogs/products/full;
+    // the rest are kept as fallbacks for older/other product shapes
+    const description = product.info || product.description || product.shortDescription || product.desc || product.opisanie || product.note || ''
 
     const addToCart = () => {
         try {
@@ -83,7 +88,7 @@ const Detail = () => {
                         : 'Narx belgilanmagan'}
                 </p>
                 {description && (
-                    <p className='text-slate-500'>
+                    <p className='text-slate-500 whitespace-pre-line'>
                         {description}
                     </p>
                 )}

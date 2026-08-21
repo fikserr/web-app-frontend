@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../lib/api";
 import { getUserId, decodeJwtPayload } from "../lib/auth";
 import { resolveDisplayPrice } from "../lib/pricing";
+import { getUsdToUzsRate } from "../lib/appConfig";
 
 const safeNumber = (value, fallback = 0) => {
   const num = Number(value ?? fallback);
@@ -72,7 +73,7 @@ function normalizeTokenOrderContext() {
     findNestedValue(payload, ['object', 'pointOfSale', 'salesPoint', 'pointOfsale', 'pointOfSaleInfo', 'tochkaProdaji']) ||
     { id: '', name: '' };
   const priceType = findNestedValue(payload, ['priceType', 'pricingType']) || { id: '', name: '' };
-  const rate = safeNumber(findNestedValue(payload, ['rate', 'defaultRate']) ?? 12200, 12200);
+  const rate = safeNumber(findNestedValue(payload, ['rate', 'defaultRate']) ?? getUsdToUzsRate(), getUsdToUzsRate());
 
   const customerId =
     customer?.id || customer?.Id || customer?.ID || contractor?.id || contractor?.Id || '';
@@ -227,7 +228,7 @@ export default function useOrder() {
         stock: normalizedStock,
         contractor: normalizedContractor,
         object: normalizedObject,
-        rate: safeNumber(orderData?.rate ?? context.rate, 12200),
+        rate: safeNumber(orderData?.rate ?? context.rate, getUsdToUzsRate()),
         priceType: normalizedPriceType,
         status: orderData?.status || { id: 'inCart', name: 'Korzinkada' },
         paymentSum: safeNumber(orderData?.paymentSum ?? 0, 0),
