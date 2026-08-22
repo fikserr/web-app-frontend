@@ -9,7 +9,7 @@ import useCategories from '../hooks/useCategories'
 import useAddBasket from '../hooks/useAddBasket'
 import TopProductsSwiper from '../components/TopProductsSwiper'
 import CategorySwiper from '../components/swiperCategories'
-import { getUserId } from '../lib/auth'
+import useTelegramUserId from '../hooks/useTelegramUserId'
 import { parseHomeText, splitHomeTextChunks } from '../lib/homeText'
 
 const ROW_ICONS = {
@@ -58,7 +58,7 @@ Texno Bozorda har bir mahsulot sinovdan o'tkazilgan va sifat kafolati bilan soti
 const Home = () => {
   const navigate = useNavigate()
   const { config } = useAppConfig()
-  const userId = getUserId()
+  const userId = useTelegramUserId()
 
   const { products: topProducts, loading: topLoading, registered } = useTopProducts({ userId })
   const { counts, updateQuantity } = useAddBasket()

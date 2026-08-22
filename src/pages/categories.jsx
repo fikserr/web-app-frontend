@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import noImage from '../assets/no-photo.jpg'
 import { Skeleton } from '../components/ui/skeleton'
 import useCategories from '../hooks/useCategories'
-import { getUserId } from '../lib/auth'
+import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
 import RegisterBanner from '../components/RegisterBanner'
 
 const Categories = () => {
-	const userId = getUserId()
+	const userId = useTelegramUserId()
 	const {
 		categories,
 		loading: categoriesLoading,

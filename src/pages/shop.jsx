@@ -6,11 +6,11 @@ import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
 import useProducts from '../hooks/useProducts'
-import { getUserId } from '../lib/auth'
+import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
 
 const Shop = () => {
-	const userId = getUserId()
+	const userId = useTelegramUserId()
 	const navigate = useNavigate()
 	const [selectedCategory, setSelectedCategory] = useState(null)
 	const [searchTerm, setSearchTerm] = useState('')

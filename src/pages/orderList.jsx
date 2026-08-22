@@ -14,7 +14,7 @@ import {
 } from '../components/ui/pagination'
 import useOrderDetail from '../hooks/useOrderDetail'
 import useOrderList from '../hooks/useOrderList'
-import { getUserId } from '../lib/auth'
+import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
 
 // backend field names for /documents/orders/detail rows aren't confirmed yet — wide
@@ -53,7 +53,7 @@ const parseOrderDate = value => {
 const OrderList = () => {
 	const [page, setPage] = useState(1)
 	const pageSize = 20
-	const userId = getUserId()
+	const userId = useTelegramUserId()
 
 	const { orders, loading, error, meta } = useOrderList(
 		userId,

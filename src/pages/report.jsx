@@ -11,10 +11,10 @@ import RegisterBanner from '../components/RegisterBanner'
 import useAktSverka from '../hooks/useAktSverka'
 import useBalance from '../hooks/useBalance'
 import getDocConfig from '../hooks/useDocConfig' // ✅ renamed import
-import { getUserId } from '../lib/auth'
+import useTelegramUserId from '../hooks/useTelegramUserId'
 
 const Report = () => {
-	const userId = getUserId()
+	const userId = useTelegramUserId()
 
 	const { balance, loading, error } = useBalance(userId)
 	const [dateRange, setDateRange] = useState({ from: null, to: null })
