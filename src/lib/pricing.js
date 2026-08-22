@@ -51,9 +51,17 @@ function priceTypeIdOf(entry) {
 // ulgurji — and (b) UZS currency, when a UZS entry exists for this product. Some
 // products in 1C only ever get a USD price typed in (no UZS entry at all) — for those,
 // this converts the matching USD entry to UZS using the live rate from /config
-// (see lib/appConfig.js) so the customer still sees, and is charged, a UZS price.
-// The returned currency is always UZS either way — the customer never sees or is
-// charged in USD.
+// (see lib/appConfig.js) so the customer still SEES a UZS price everywhere in the UI.
+//
+// The return value has two parts:
+//   - price/oldPrice/currency: always UZS — what to *display* to the customer.
+//   - order: what to actually *submit* in the order payload. For a real UZS entry this is
+//     identical to the display value. For a USD-only product it's the ORIGINAL USD price
+//     with the real USD currency.id — never the converted UZS number with a fabricated
+//     empty id. The backend rejects an empty/invalid currency.id (400, "currency.id" —
+//     it validates against its own currency catalog), and it already receives the live
+//     UZS↔USD rate as the order's top-level `rate` field (see useOrder.jsx), so it does
+//     the USD→UZS conversion itself server-side from the real USD line.
 //
 // price/oldPrice are `null` (not 0) only when the product has neither a UZS nor a USD
 // entry at all — genuinely priceless, not the same as priced at zero — so callers must
@@ -81,7 +89,7 @@ export function resolveDisplayPrice(product) {
       })
     }
 
-    return {
+    const value = {
       price: Number(chosen?.price ?? 0),
       oldPrice: Number(chosen?.oldPrice ?? chosen?.price ?? 0),
       currency: {
@@ -89,27 +97,40 @@ export function resolveDisplayPrice(product) {
         name: chosen?.currency?.name || chosen?.currency?.Name || 'UZS',
       },
     }
+    return { ...value, order: value }
   }
 
-  // No UZS entry at all for this product — fall back to a USD entry, converted.
+  // No UZS entry at all for this product — fall back to a USD entry. Displayed to the
+  // customer converted to UZS, but submitted to the backend as the real USD line.
   const usdEntries = entries.filter(isUSD)
   const usdPick = pickForPriceType(usdEntries)
 
   if (usdPick) {
     const { entry: chosen } = usdPick
     const rate = getUsdToUzsRate()
+    const usdPrice = Number(chosen?.price ?? 0)
+    const usdOldPrice = Number(chosen?.oldPrice ?? chosen?.price ?? 0)
     console.info('[Pricing] UZS narx yo\'q, USD narxdan hisoblandi', {
       productId: product?.id || product?.Id,
-      usdPrice: chosen?.price,
+      usdPrice,
       rate,
     })
 
     return {
-      price: Math.round(Number(chosen?.price ?? 0) * rate),
-      oldPrice: Math.round(Number(chosen?.oldPrice ?? chosen?.price ?? 0) * rate),
+      price: Math.round(usdPrice * rate),
+      oldPrice: Math.round(usdOldPrice * rate),
       currency: { id: '', name: 'UZS' },
+      order: {
+        price: usdPrice,
+        oldPrice: usdOldPrice,
+        currency: {
+          id: chosen?.currency?.id || chosen?.currency?.Id || '',
+          name: chosen?.currency?.name || chosen?.currency?.Name || 'USD',
+        },
+      },
     }
   }
 
-  return { price: null, oldPrice: null, currency: { id: '', name: 'UZS' } }
+  const empty = { price: null, oldPrice: null, currency: { id: '', name: 'UZS' } }
+  return { ...empty, order: empty }
 }

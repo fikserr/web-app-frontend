@@ -3,7 +3,19 @@ import { createRoot } from 'react-dom/client'
 import Root from './router'
 import './index.css'
 import { loginViaTelegram, scheduleTokenRefreshForExistingToken } from './lib/api'
+import { decodeJwtPayload } from './lib/auth'
 import { fetchAppConfig } from './lib/appConfig'
+
+// A token with no readable "exp" claim is treated as usable (matches
+// scheduleTokenRefreshFromToken's own fallback in lib/api.js) — only one whose exp has
+// definitely passed counts as expired.
+function isTokenExpired(token) {
+  if (!token) return true
+  const payload = decodeJwtPayload(token)
+  if (typeof payload?.exp !== 'number') return false
+  const remainingSec = payload.exp - Math.floor(Date.now() / 1000)
+  return remainingSec <= 0
+}
 
 // Telegram WebApp tayyor bo'lishini kutish — loginViaTelegram() faqat xom `initData`
 // satridan foydalanadi, shuning uchun aynan shuni kutamiz (avval `initDataUnsafe.user.id`
@@ -92,10 +104,18 @@ async function boot() {
     }
 
     const existingToken = localStorage.getItem('token')
+    // An expired leftover token is worse than no token at all: rendering optimistically
+    // with it means the very first data requests (config, categories, ...) go out with a
+    // token the backend will reject — and, unlike the "no token" case below, nothing was
+    // awaiting a fresh login first to prevent that. Treat "expired" the same as "missing"
+    // so those requests go out with a token that's actually valid.
+    const needsFreshLogin = !existingToken || isTokenExpired(existingToken)
 
-    if (existingToken) {
-      console.log('[Boot] Existing token found, keeping it for this session')
+    if (!needsFreshLogin) {
+      console.log('[Boot] Existing token found and still valid, keeping it for this session')
       scheduleTokenRefreshForExistingToken()
+    } else if (existingToken) {
+      console.log('[Boot] Existing token found but expired — refreshing before first render')
     } else {
       console.log('[Boot] No token found; attempting fresh login flow')
     }
@@ -104,7 +124,7 @@ async function boot() {
 
     if (!telegramReady) {
       console.error('[Boot] Telegram initData topilmadi — login o\'tkazib yuborildi')
-    } else if (!existingToken) {
+    } else if (needsFreshLogin) {
       const res = await loginViaTelegram()
       if (res?.token) {
         console.log('[Boot] ✅ Fresh login successful')

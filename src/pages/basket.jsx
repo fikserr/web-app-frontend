@@ -47,10 +47,13 @@ const Basket = () => {
 			products: basket.map(item => {
 				const productId = item.productId || item.Id || item.id;
 				const quantity = counts[productId]?.count || 0;
-				// item.price is already resolved (see useAddBasket.jsx); this only re-resolves
-				// from a raw prices[] array as a defensive fallback, never falling back to USD
-				const rawPriceFallback = item.price == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
-				const price = Number(item.price ?? rawPriceFallback?.price ?? 0);
+				// item.orderPrice/orderCurrency* is already resolved (see useAddBasket.jsx) — a
+				// USD-only product keeps its real USD price + currency.id here (the backend
+				// applies the order's own `rate` field to convert it), while item.price/currency
+				// stay UZS purely for what's shown on screen. This fallback only re-resolves from
+				// a raw prices[] array in the rare case orderPrice wasn't already set.
+				const rawPriceFallback = item.orderPrice == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
+				const price = Number(item.orderPrice ?? rawPriceFallback?.order?.price ?? item.price ?? 0);
 				const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
 
 				return {
@@ -72,10 +75,10 @@ const Basket = () => {
 						},
 					],
 					price: Number(price.toFixed(4)),
-					oldPrice: Number((item.oldPrice ?? price).toFixed(4)),
+					oldPrice: Number((item.orderOldPrice ?? rawPriceFallback?.order?.oldPrice ?? price).toFixed(4)),
 					currency: {
-						name: item.currencyName || rawPriceFallback?.currency?.name || 'UZS',
-						id: item.currencyId || rawPriceFallback?.currency?.id || '',
+						name: item.orderCurrencyName || rawPriceFallback?.order?.currency?.name || 'UZS',
+						id: item.orderCurrencyId || rawPriceFallback?.order?.currency?.id || '',
 					},
 				};
 			}),

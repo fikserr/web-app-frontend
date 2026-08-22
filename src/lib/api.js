@@ -289,13 +289,20 @@ api.interceptors.response.use(
       data: err?.response?.data,
     })
 
-    if (err.response && err.response.status === 402) {
-      console.warn('[Auth] Payment required by backend. This is not a JWT/auth expiry issue.')
-      return Promise.reject(err)
-    }
-
     const originalReq = err.config
-    if (err.response && err.response.status === 401 && !originalReq._retry) {
+    const status = err.response?.status
+
+    // 401 (unauthenticated) and 402 both get one refresh-then-retry attempt. 402 was
+    // previously assumed to never be a token issue and was never retried — but in
+    // practice this backend also returns 402 (not 401) for a stale/expired token left
+    // over from a previous session, which meant a request made with an old token failed
+    // permanently even after a fresh token was obtained moments later in the background
+    // (see scheduleTokenRefreshFromToken), and only a full page reload — which re-sent
+    // everything with the now-fresh token — actually recovered. Retrying is safe either
+    // way: if the token was genuinely stale, the retry succeeds; if this really is a
+    // backend-side billing/licensing block, the retry fails the same way and the error
+    // below still surfaces, just one extra round-trip later.
+    if ((status === 401 || status === 402) && !originalReq._retry) {
       originalReq._retry = true
       try {
         await refreshOrRelogin()
@@ -305,6 +312,11 @@ api.interceptors.response.use(
         return Promise.reject(refreshErr)
       }
     }
+
+    if (status === 402) {
+      console.warn('[Auth] Payment required by backend even after a fresh token — likely a genuine backend-side billing/licensing issue, not a stale session.')
+    }
+
     return Promise.reject(err)
   }
 )

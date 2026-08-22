@@ -28,10 +28,18 @@ const useAddBasket = () => {
         ...product,
         productId,
         count: qty,
+        // shown to the customer everywhere in the basket UI — always UZS
         price: displayPrice.price,
         oldPrice: displayPrice.oldPrice,
         currencyName: displayPrice.currency.name,
         currencyId: displayPrice.currency.id,
+        // what actually gets submitted in the order payload — for a USD-only product
+        // this is the real USD price + currency.id, not the UZS number shown above (see
+        // lib/pricing.js: an empty/fabricated currency.id gets rejected by the backend)
+        orderPrice: displayPrice.order.price,
+        orderOldPrice: displayPrice.order.oldPrice,
+        orderCurrencyName: displayPrice.order.currency.name,
+        orderCurrencyId: displayPrice.order.currency.id,
         name: product.name,
         image: product.imageUrl || null,
       };
