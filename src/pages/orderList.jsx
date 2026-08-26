@@ -12,10 +12,12 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from '../components/ui/pagination'
+import useAppConfig from '../hooks/useAppConfig'
 import useOrderDetail from '../hooks/useOrderDetail'
 import useOrderList from '../hooks/useOrderList'
 import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
+import { getUsdToUzsRate } from '../lib/appConfig'
 
 // shape confirmed against a real /documents/orders/detail response: each product row is
 // { product: {id,name}, barcode, currency: {id,name}, price, quantities: [{stock,measure,quantity,amount,remainder}], bundleItems }
@@ -59,6 +61,9 @@ const OrderList = () => {
 		page,
 		pageSize
 	)
+	// re-renders once the live USD→UZS rate arrives from /config (see lib/appConfig.js),
+	// same pattern as card.jsx — order totals below are converted with it
+	useAppConfig()
 	const [expandedOrders, setExpandedOrders] = useState({})
 	const { detailsByOrderId, loadingOrderId, errorByOrderId, fetchOrderDetail } = useOrderDetail()
 
@@ -127,8 +132,11 @@ const OrderList = () => {
 					const productList = Array.isArray(detailRows) ? detailRows.map((row, index) => normalizeDetailRow(row, index, orderId)) : []
 					const isLoadingProducts = loadingOrderId === orderId
 					const productsError = errorByOrderId[orderId]
-					// amountToPaySum is the UZS total; USD is never shown to the customer
-					const orderTotal = Number(order.amountToPaySum ?? 0)
+					// amountToPaySum comes back from the backend denominated in USD (not UZS,
+					// despite the field name) — convert with the live rate so the total shown
+					// here matches the so'm amounts on the receipt, same as card.jsx does for
+					// USD-only product prices (see lib/pricing.js)
+					const orderTotal = Math.round(Number(order.amountToPaySum ?? 0) * getUsdToUzsRate())
 					const statusLabel =
 						order.status && typeof order.status === 'object'
 							? order.status.name ?? order.status.id ?? 'Noma’lum'
