@@ -230,7 +230,7 @@ export default function useOrder() {
         object: normalizedObject,
         rate: safeNumber(orderData?.rate ?? context.rate, getUsdToUzsRate()),
         priceType: normalizedPriceType,
-        status: orderData?.status || { id: 'inCart', name: 'Korzinkada' },
+        status: orderData?.status || { id: 'new', name: 'Yangi' },
         paymentSum: safeNumber(orderData?.paymentSum ?? 0, 0),
         paymentVal: safeNumber(orderData?.paymentVal ?? 0, 0),
         paymentTerminal: safeNumber(orderData?.paymentTerminal ?? 0, 0),

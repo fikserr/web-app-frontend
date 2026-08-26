@@ -50,13 +50,19 @@ function useOrderDetail() {
         });
 
         const body = res.data?.data ?? res.data ?? {};
-        const rows = Array.isArray(body?.content)
+        const contentList = Array.isArray(body?.content)
           ? body.content
           : Array.isArray(body)
             ? body
             : [];
 
-        console.log("[OrderDetail] raw rows for", orderUUID, rows);
+        // "/documents/orders/detail" returns full order documents (each carrying its own
+        // "products" line-items array), not flat product rows — find the one matching this
+        // order and pull its products out
+        const matchedOrder =
+          contentList.find((o) => o?.document?.id === orderUUID) ?? contentList[0];
+        const rows = Array.isArray(matchedOrder?.products) ? matchedOrder.products : [];
+
         setDetailsByOrderId((prev) => ({ ...prev, [orderUUID]: rows }));
       } catch (err) {
         console.error("[OrderDetail] fetch error:", err);

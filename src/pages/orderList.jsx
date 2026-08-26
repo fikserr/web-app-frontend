@@ -17,9 +17,8 @@ import useOrderList from '../hooks/useOrderList'
 import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
 
-// backend field names for /documents/orders/detail rows aren't confirmed yet — wide
-// fallback candidates the same way the rest of this app handles uncertain backend shapes,
-// until a real response sample narrows this down
+// shape confirmed against a real /documents/orders/detail response: each product row is
+// { product: {id,name}, barcode, currency: {id,name}, price, quantities: [{stock,measure,quantity,amount,remainder}], bundleItems }
 const normalizeDetailRow = (row, index, orderId) => {
 	const product = row.product || row.Product || {}
 	const measure = row.measure || row.quantities?.[0]?.measure || {}
@@ -109,7 +108,9 @@ const OrderList = () => {
 		<div className={`my-20 px-3`}>
 			{orders.length > 0 ? (
 				orders.map(order => {
-					const orderId = order.UUID ?? order.Id ?? order.id ?? order.orderId ?? order.code ?? order.number
+					// "document.id" is the confirmed stable GUID for an order — "UUID" on this
+					// backend is unreliable (often blank or a garbled non-GUID value)
+					const orderId = order.document?.id ?? order.UUID ?? order.Id ?? order.id ?? order.orderId ?? order.code ?? order.number
 					// the list endpoint only returns a count ("productsCount") — the actual line
 					// items are fetched lazily via useOrderDetail when this order is expanded
 					const productsCount = Number(order.productsCount ?? 0)
