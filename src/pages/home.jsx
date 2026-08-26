@@ -62,7 +62,7 @@ const Home = () => {
 
   const { products: topProducts, loading: topLoading, registered } = useTopProducts({ userId })
   const { counts, updateQuantity } = useAddBasket()
-  const { categories, loading: categoriesLoading } = useCategories(userId, 1, 20)
+  const { categories, loading: categoriesLoading, registered: categoriesRegistered } = useCategories(userId, 1, 20)
 
   const title = config?.title?.trim() || DEFAULT_TITLE
   const chunks = splitHomeTextChunks(config?.text?.trim() || DEFAULT_TEXT)
@@ -83,7 +83,7 @@ const Home = () => {
         </div>
       </div>
 
-      {(topLoading || topProducts.length > 0) && (
+      {(topLoading || (registered && topProducts.length > 0)) && (
         <div className='mt-10'>
           <h2 className='text-2xl font-semibold mb-4'>Top mahsulotlar</h2>
           <TopProductsSwiper
@@ -102,7 +102,7 @@ const Home = () => {
         </div>
       )}
 
-      {(categoriesLoading || categories.length > 0) && (
+      {(categoriesLoading || (categoriesRegistered && categories.length > 0)) && (
         <div className='mt-10'>
           <h2 className='text-2xl font-semibold mb-4'>Kategoriyalar</h2>
           <CategorySwiper

@@ -89,6 +89,8 @@ const Categories = () => {
 							</div>
 						))}
 					</div>
+				) : !registered ? (
+					null
 				) : filteredCategories.length > 0 ? (
 					// 🔹 Real Categories
 					<div className='grid grid-cols-3 sm:grid-cols-4 justify-around gap-4'>

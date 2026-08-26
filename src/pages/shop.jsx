@@ -103,6 +103,8 @@ const Shop = () => {
 								? Array.from({ length: 6 }).map((_, i) => (
 										<Card key={i} loading={true} />
 								  ))
+								: !registered
+								? null
 								: filteredProducts.map(p => (
 										<Card
 											key={p.id}
