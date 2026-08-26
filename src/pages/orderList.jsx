@@ -54,7 +54,7 @@ const OrderList = () => {
 	const pageSize = 20
 	const userId = useTelegramUserId()
 
-	const { orders, loading, error, meta } = useOrderList(
+	const { orders, loading, error, meta, registered } = useOrderList(
 		userId,
 		page,
 		pageSize
@@ -79,7 +79,7 @@ const OrderList = () => {
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
-					registered={false}
+					registered={registered}
 					loading={loading}
 					pageText={'Buyurtmalaringizni ko‘rish uchun'}
 				/>
@@ -91,6 +91,15 @@ const OrderList = () => {
 				<RegisterBanner
 					registered={false}
 					pageText='Buyurtmalarni ko‘rish uchun qayta urinib ko‘ring.'
+				/>
+			</div>
+		)
+	if (!registered)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText='Buyurtmalaringizni ko‘rish uchun'
 				/>
 			</div>
 		)

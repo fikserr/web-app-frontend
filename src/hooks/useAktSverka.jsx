@@ -6,6 +6,7 @@ function useAktSverka(userId, startDate, endDate) {
   const [akt, setAkt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [registered, setRegistered] = useState(false);
 
 
   useEffect(() => {
@@ -27,7 +28,10 @@ function useAktSverka(userId, startDate, endDate) {
         params: { userId, startDate, endDate, contractorId: contractorId || undefined },
         signal,
       })
-      .then((res) => setAkt(res.data))
+      .then((res) => {
+        setAkt(res.data);
+        setRegistered(res.data?.registered || res.data?.data?.registered || false);
+      })
       .catch((err) => {
         if (err.name !== "CanceledError") setError(err);
       })
@@ -36,7 +40,7 @@ function useAktSverka(userId, startDate, endDate) {
     return () => controller.abort();
   }, [userId, startDate, endDate]);
 
-  return { akt, loading, error };
+  return { akt, loading, error, registered };
 }
 
 export default useAktSverka;

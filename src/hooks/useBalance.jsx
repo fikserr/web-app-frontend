@@ -5,6 +5,7 @@ function useBalance(userId) {
   const [balance, setBalance] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [registered, setRegistered] = useState(false);
 
 
   useEffect(() => {
@@ -18,7 +19,10 @@ function useBalance(userId) {
 
     api
       .get(`/balance`, { params: { userId }, signal })
-      .then((res) => setBalance(res.data?.data?.trim() || ""))
+      .then((res) => {
+        setBalance(res.data?.data?.trim() || "");
+        setRegistered(res.data?.registered || res.data?.data?.registered || false);
+      })
       .catch((err) => {
         if (err.name !== "CanceledError") setError(err);
       })
@@ -27,7 +31,7 @@ function useBalance(userId) {
     return () => controller.abort();
   }, [userId]);
 
-  return { balance, loading, error };
+  return { balance, loading, error, registered };
 }
 
 export default useBalance;

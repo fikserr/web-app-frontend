@@ -16,7 +16,7 @@ import useTelegramUserId from '../hooks/useTelegramUserId'
 const Report = () => {
 	const userId = useTelegramUserId()
 
-	const { balance, loading, error } = useBalance(userId)
+	const { balance, loading, error, registered } = useBalance(userId)
 	const [dateRange, setDateRange] = useState({ from: null, to: null })
 	const [showAkt, setShowAkt] = useState(false)
 
@@ -34,7 +34,7 @@ const Report = () => {
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
-					registered={false}
+					registered={registered}
 					loading={loading}
 					pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`}
 				/>
@@ -46,6 +46,15 @@ const Report = () => {
 				<RegisterBanner
 					registered={false}
 					pageText='Buyurtmalarni ko‘rish uchun qayta urinib ko‘ring.'
+				/>
+			</div>
+		)
+	if (!registered)
+		return (
+			<div className='w-full fixed top-0 left-0 pt-16'>
+				<RegisterBanner
+					registered={false}
+					pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`}
 				/>
 			</div>
 		)

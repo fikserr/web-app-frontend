@@ -40,6 +40,7 @@ function useOrderList(userId, page, pageSize) {
 	})
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState(null)
+	const [registered, setRegistered] = useState(false)
 
 	useEffect(() => {
 		if (!userId) {
@@ -84,6 +85,7 @@ function useOrderList(userId, page, pageSize) {
 
 				setOrders(normalizedOrders)
 				setMeta(normalizedMeta)
+				setRegistered(res.data?.registered || res.data?.data?.registered || false)
 				return
 			} catch (err) {
 				if (err?.name !== 'AbortError') {
@@ -103,7 +105,7 @@ function useOrderList(userId, page, pageSize) {
 		return () => controller.abort()
 	}, [userId, page, pageSize])
 
-	return { orders, meta, loading, error }
+	return { orders, meta, loading, error, registered }
 }
 
 export default useOrderList
