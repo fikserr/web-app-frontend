@@ -182,8 +182,8 @@ const OrderList = () => {
 												key={product.key}
 												className='border rounded p-2 bg-gray-50 flex items-center gap-3 dark:bg-gray-700'
 											>
-												<div>
-													<p className='font-medium h-[50px] max-h-[50px]'>
+												<div className='min-w-0'>
+													<p className='font-medium line-clamp-2'>
 														{product.name}
 													</p>
 													<p className='text-sm text-gray-600 dark:text-gray-300'>
