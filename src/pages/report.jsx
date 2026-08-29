@@ -9,6 +9,7 @@ import { format } from 'date-fns'
 import { useState } from 'react'
 import RegisterBanner from '../components/RegisterBanner'
 import useAktSverka from '../hooks/useAktSverka'
+import useAppConfig from '../hooks/useAppConfig'
 import useBalance from '../hooks/useBalance'
 import getDocConfig from '../hooks/useDocConfig' // ✅ renamed import
 import useTelegramUserId from '../hooks/useTelegramUserId'
@@ -16,7 +17,14 @@ import useTelegramUserId from '../hooks/useTelegramUserId'
 const Report = () => {
 	const userId = useTelegramUserId()
 
-	const { balance, loading, error, registered } = useBalance(userId)
+	// /balance's response has a different shape than the catalog/order endpoints (its
+	// "data" is a plain string, not {content, registered}) and doesn't carry its own
+	// registered flag — so unlike shop/categories/orderList, this page trusts the
+	// app-wide /config registered flag (lib/appConfig.js) instead of a per-request one
+	const { config } = useAppConfig()
+	const registered = config?.registered
+
+	const { balance, loading, error } = useBalance(userId)
 	const [dateRange, setDateRange] = useState({ from: null, to: null })
 	const [showAkt, setShowAkt] = useState(false)
 
@@ -30,12 +38,16 @@ const Report = () => {
 		showAkt && dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null
 	)
 
-	if (loading)
+	// registered is undefined until /config resolves — treat that the same as still
+	// loading so we never flash the "please register" banner at a genuinely registered user
+	const isLoading = loading || registered === undefined
+
+	if (isLoading)
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
 					registered={registered}
-					loading={loading}
+					loading={isLoading}
 					pageText={`Hisob-kitob va aktivlaringizni ko‘rish uchun`}
 				/>
 			</div>
