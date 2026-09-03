@@ -3,6 +3,7 @@ import { IoIosCloseCircleOutline, IoMdSearch } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 import noImage from '../assets/no-photo.jpg'
 import { Skeleton } from '../components/ui/skeleton'
+import useAppConfig from '../hooks/useAppConfig'
 import useCategories from '../hooks/useCategories'
 import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
@@ -10,12 +11,16 @@ import RegisterBanner from '../components/RegisterBanner'
 
 const Categories = () => {
 	const userId = useTelegramUserId()
+	// /catalogs/categories/images doesn't reliably return its own "registered" flag —
+	// use the app-wide flag from /config instead, same fix applied to shop.jsx/report.jsx
+	const { config } = useAppConfig()
+	const registered = config?.registered
 	const {
 		categories,
 		loading: categoriesLoading,
 		error: categoriesError,
-		registered
 	} = useCategories(userId, 1, 10)
+	const isLoading = categoriesLoading || registered === undefined
 
 	const [cat, setCat] = useState([])
 	const [searchTerm, setSearchTerm] = useState('')
@@ -50,7 +55,7 @@ const Categories = () => {
 	console.log(userId, 'userId')
 	return (
 		<div className='w-full'>
-			<RegisterBanner registered={registered} loading={categoriesLoading} />
+			<RegisterBanner registered={registered} loading={isLoading} />
 			<div className='px-2 mb-40 mt-24'>
 			
 				{/* Search Bar */}
@@ -76,7 +81,7 @@ const Categories = () => {
 					<h2 className='text-2xl font-semibold h-8 max-h-8'>Kategoriyalar</h2>
 				</div>
 				{/* Conditional rendering */}
-				{categoriesLoading ? (
+				{isLoading ? (
 					// 🔹 Skeleton Loader
 					<div className='grid grid-cols-3 sm:grid-cols-4 justify-around gap-4'>
 						{Array.from({ length: 8 }).map((_, idx) => (
@@ -113,7 +118,7 @@ const Categories = () => {
 							</div>
 						))}
 					</div>
-				) : !categoriesLoading && !categoriesError ? (
+				) : !isLoading && !categoriesError ? (
 					// 🔹 No Results — only after loading completes
 					<div className='w-full h-[400px] flex flex-col gap-0 items-center justify-center'>
 						<img src={nothingFound} className='w-[300px]' />

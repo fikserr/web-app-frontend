@@ -5,6 +5,7 @@ import Card from '../components/card'
 import RegisterBanner from '../components/RegisterBanner'
 import { Button } from '../components/ui/button'
 import useAddBasket from '../hooks/useAddBasket'
+import useAppConfig from '../hooks/useAppConfig'
 import useProducts from '../hooks/useProducts'
 import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
@@ -24,11 +25,16 @@ const Shop = () => {
 		}
 	}, [])
 
+	// /catalogs/products/full doesn't reliably return its own "registered" flag (confirmed:
+	// it always came back false, hiding products even for registered users) — use the
+	// app-wide flag from /config instead, same fix applied to report.jsx
+	const { config } = useAppConfig()
+	const registered = config?.registered
+
 	const {
 		products,
 		loading: productsLoading,
 		error: productsError,
-		registered,
 	} = useProducts({
 		page: 1,
 		pageSize: 4,
@@ -53,9 +59,12 @@ const Shop = () => {
 	console.log('[Shop] Error:', productsError);
 	console.log('[Shop] Filtered Products:', filteredProducts);
 
+	// registered is undefined until /config resolves — treat that as still-loading too
+	const isLoading = productsLoading || registered === undefined
+
 	return (
 		<div className='w-full'>
-			<RegisterBanner registered={registered} loading={productsLoading} />
+			<RegisterBanner registered={registered} loading={isLoading} />
 			<div className={`px-2 xl:px-10 py-24`}>
 				<div className='flex items-center md:max-w-lg border justify-between p-2 rounded-xl px-5 mb-6'>
 					{/* search input */}
@@ -99,7 +108,7 @@ const Shop = () => {
 						)}
 					{filteredProducts.length > 0 ? (
 						<div className='grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4'>
-							{productsLoading
+							{isLoading
 								? Array.from({ length: 6 }).map((_, i) => (
 										<Card key={i} loading={true} />
 								  ))

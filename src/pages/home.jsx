@@ -60,9 +60,16 @@ const Home = () => {
   const { config } = useAppConfig()
   const userId = useTelegramUserId()
 
-  const { products: topProducts, loading: topLoading, registered } = useTopProducts({ userId })
+  // /catalogs/topProducts and /catalogs/categories/images don't reliably return their own
+  // "registered" flag — use the app-wide flag from /config instead, same fix applied to
+  // shop.jsx/categories.jsx/report.jsx
+  const registered = config?.registered
+  const { products: topProducts, loading: topLoading } = useTopProducts({ userId })
   const { counts, updateQuantity } = useAddBasket()
-  const { categories, loading: categoriesLoading, registered: categoriesRegistered } = useCategories(userId, 1, 20)
+  const { categories, loading: categoriesLoading } = useCategories(userId, 1, 20)
+  // registered is undefined until /config resolves — treat that as still-loading too
+  const isTopLoading = topLoading || registered === undefined
+  const isCategoriesLoading = categoriesLoading || registered === undefined
 
   const title = config?.title?.trim() || DEFAULT_TITLE
   const chunks = splitHomeTextChunks(config?.text?.trim() || DEFAULT_TEXT)
@@ -83,12 +90,12 @@ const Home = () => {
         </div>
       </div>
 
-      {(topLoading || (registered && topProducts.length > 0)) && (
+      {(isTopLoading || (registered && topProducts.length > 0)) && (
         <div className='mt-10'>
           <h2 className='text-2xl font-semibold mb-4'>Top mahsulotlar</h2>
           <TopProductsSwiper
             products={topProducts}
-            loading={topLoading}
+            loading={isTopLoading}
             registered={registered}
             counts={counts}
             onUpdate={updateQuantity}
@@ -102,13 +109,13 @@ const Home = () => {
         </div>
       )}
 
-      {(categoriesLoading || (categoriesRegistered && categories.length > 0)) && (
+      {(isCategoriesLoading || (registered && categories.length > 0)) && (
         <div className='mt-10'>
           <h2 className='text-2xl font-semibold mb-4'>Kategoriyalar</h2>
           <CategorySwiper
             categories={categories}
             handleCategoryClick={handleCategoryClick}
-            loading={categoriesLoading}
+            loading={isCategoriesLoading}
           />
         </div>
       )}
