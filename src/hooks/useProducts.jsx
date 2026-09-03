@@ -18,6 +18,13 @@ export default function useProducts({
       if (!userId || !categoryId) return; // ❌ keraksiz requestni to‘xtatamiz
       setLoading(true);
       try {
+        // includeParents omitted: the backend throws a 400 ("приведение значения к типу
+        // Булево не может быть выполнено" — Boolean type conversion failure) whenever this
+        // endpoint is called with a category filter, unlike /catalogs/categories/images
+        // which accepts the same includeParents=false fine. Each 1C HTTP service endpoint
+        // defines its own parameter type schema, so this field may be typed differently
+        // (or unsupported) here specifically — dropping it as a first attempt at working
+        // around the server-side error.
         const res = await api.get(`/catalogs/products/full`, {
           params: {
             page,
@@ -26,7 +33,6 @@ export default function useProducts({
             sortOrder: 'desc',
             search: '',
             parent: '',
-            includeParents: false,
             userId,
             ids: '',
             categoriyIds: categoryId,
