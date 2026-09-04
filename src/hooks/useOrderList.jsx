@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../lib/api'
+import { getContractorId } from '../lib/auth'
 
 const normalizeOrderPayload = payload => {
 	const root = payload?.data ?? payload
@@ -60,7 +61,9 @@ function useOrderList(userId, page, pageSize) {
 				setError(null)
 
 				// full query shape confirmed against the Postman collection's "Orders Copy > list"
-				// request — the filter fields are empty by default (no filter applied)
+				// request — filtered by customerIds (the contractor/customer tied to this
+				// account's JWT) so the list only returns this contractor's own orders
+				const contractorId = getContractorId()
 				const query = {
 					page,
 					pageSize,
@@ -71,7 +74,7 @@ function useOrderList(userId, page, pageSize) {
 					statusIds: '',
 					startDate: '',
 					endDate: '',
-					customerIds: '',
+					customerIds: contractorId || '',
 					staffIds: '',
 				}
 
