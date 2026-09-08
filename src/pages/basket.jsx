@@ -78,25 +78,31 @@ const Basket = () => {
 			};
 		})
 
-		// Tried saleType: 'val' for carts with a non-UZS line as a first hypothesis for why
-		// "Jami. val" always stayed blank — a real test order came back with BOTH "Jami. so'm"
-		// AND "Jami. val" blank, worse than the 'sum' default, so 'val' is not it. A follow-up
-		// test with saleType back at 'sum' still put every line (UZS and USD alike) into
-		// "Jami. so'm" — so per-line currency isn't what the report keys off either.
+		// Ruled out: saleType: 'val' broke both "Jami. so'm" and "Jami. val"; saleType back at
+		// 'sum' with per-line currency alone (the original behavior) put every line — UZS and
+		// USD alike — into "Jami. so'm"; adding an order-level `currency` field mirrored from
+		// the foreign-currency line changed nothing either. None of those touched paymentSum/
+		// paymentVal, which we always sent as 0/0.
 		//
-		// New hypothesis: every OTHER shared reference on this document (stock, contractor,
-		// object, priceType) is sent once at the order's top level, but currency is only ever
-		// present per line — there's no order-level currency field at all. Sending one,
-		// mirrored from whichever line actually carries a non-UZS currency, so the document
-		// itself is tagged with it. saleType stays 'sum' (already known not to be the culprit).
-		const foreignCurrencyLine = products.find(p => p.currency?.name && p.currency.name !== 'UZS')
+		// paymentSum/paymentVal is how much of the order is being settled in so'm vs in
+		// foreign currency — "Jami. so'm"/"Jami. val" reflects THAT split, not each line's own
+		// currency tag. So it needs to be computed from the lines and sent explicitly: the
+		// so'm-priced lines' amounts into paymentSum, the USD-priced lines' amounts (already in
+		// their own native USD amount, per quantities[0].amount above) into paymentVal.
+		const paymentSum = products
+			.filter(p => (p.currency?.name || 'UZS') === 'UZS')
+			.reduce((sum, p) => sum + Number(p.quantities?.[0]?.amount || 0), 0)
+		const paymentVal = products
+			.filter(p => (p.currency?.name || 'UZS') !== 'UZS')
+			.reduce((sum, p) => sum + Number(p.quantities?.[0]?.amount || 0), 0)
 
 		const orderData = {
 			userId: String(getUserId() || ''),
 			UUID: generateUuidFallback(),
 			comment: comment?.trim() || '',
 			saleType: 'sum',
-			...(foreignCurrencyLine ? { currency: { ...foreignCurrencyLine.currency } } : {}),
+			paymentSum: Number(paymentSum.toFixed(4)),
+			paymentVal: Number(paymentVal.toFixed(4)),
 			products,
 		}
 
