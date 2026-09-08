@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import api from '../lib/api'
 import useAddBasket from '../hooks/useAddBasket'
 import { toast } from 'sonner'
@@ -8,7 +8,6 @@ import { resolveDisplayPrice } from '../lib/pricing'
 import useAppConfig from '../hooks/useAppConfig'
 
 const Detail = () => {
-    const [isBottom, setIsBottom] = useState(false);
     const location = useLocation()
     // card.jsx passes the product it already fetched (from /catalogs/products/full, so it's
     // complete — description included) via navigation state. Only hit the API when that's
@@ -19,19 +18,6 @@ const Detail = () => {
     const { counts, updateQuantity } = useAddBasket()
     // re-renders once the USD→UZS rate arrives from /config (see card.jsx for why)
     useAppConfig()
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY;
-            const windowHeight = window.innerHeight;
-            const fullHeight = document.documentElement.scrollHeight;
-
-            setIsBottom(scrollTop + windowHeight >= fullHeight - 20);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     useEffect(() => {
         if (!id || location.state?.product) return
@@ -63,11 +49,12 @@ const Detail = () => {
     // "info" is the canonical description field returned by /catalogs/products/full;
     // the rest are kept as fallbacks for older/other product shapes
     const description = product.info || product.description || product.shortDescription || product.desc || product.opisanie || product.note || ''
+    const productCount = counts[product.id]?.count || 0
+    const hasDiscount = displayPrice.price != null && displayPrice.oldPrice > displayPrice.price
 
     const addToCart = () => {
         try {
-            const current = counts[product.id]?.count || 0
-            updateQuantity(product, current + 1)
+            updateQuantity(product, productCount + 1)
             toast.success('Mahsulot savatga qo‘shildi')
         } catch (e) {
             console.error('Add to cart error', e)
@@ -75,53 +62,120 @@ const Detail = () => {
         }
     }
 
-    return (
-        <div className='mb-32 grid sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:px-5 xl:px-10 mt-24'>
-            <div className='sm:col-span-1 md:col-span-2'>
-                <img src={product.imageUrl || NoImage} alt={product.name} className='mx-auto w-full rounded-xl' />
-            </div>
-            <div className='px-2 sm:col-span-2 md:col-span-1 lg:col-span-2'>
-                <h2 className='text-xl font-bold mt-2'>{product.name}</h2>
-                <p className='text-4xl font-bold my-3'>
-                    {displayPrice.price != null
-                        ? `${displayPrice.price.toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm`
-                        : 'Narx belgilanmagan'}
-                </p>
-                {description && (
-                    <p className='text-slate-500 whitespace-pre-line'>
-                        {description}
-                    </p>
-                )}
+    // once the product is in the basket, the button below turns into a -/qty/+
+    // stepper (same pattern as card.jsx) so the customer can pick a quantity
+    // without tapping "Savatga qo'shish" once per unit
+    const changeQuantity = qty => {
+        try {
+            updateQuantity(product, qty)
+        } catch (e) {
+            console.error('Update quantity error', e)
+            toast.error('Savatga qo‘shishda xatolik')
+        }
+    }
 
-                {(product.attributes || []).length > 0 && (
-                    <>
-                        <h3 className='font-semibold text-xl mt-5'>Tavsifi</h3>
-                        {product.attributes.map(attr => (
-                            <div key={attr.name} className='flex justify-between px-2 border-b-2 pb-2'>
-                                <p className='text-slate-500'>{attr.name}</p>
-                                <p>{attr.value}</p>
+    return (
+        <div className='pb-28 mt-24 px-4 sm:px-6 xl:px-10 max-w-4xl mx-auto'>
+            <div className='sm:grid sm:grid-cols-2 sm:gap-8'>
+                <div className='rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-4 sm:sticky sm:top-20 sm:self-start'>
+                    <img
+                        src={product.imageUrl || NoImage}
+                        alt={product.name}
+                        className='w-full aspect-square object-contain'
+                        onError={e => {
+                            if (e.currentTarget.src !== NoImage) e.currentTarget.src = NoImage
+                        }}
+                    />
+                </div>
+
+                <div className='mt-4 sm:mt-0'>
+                    <h1 className='text-lg font-semibold leading-snug'>{product.name}</h1>
+
+                    <div className='mt-2 flex items-baseline gap-2 flex-wrap'>
+                        <p className='text-3xl font-bold'>
+                            {displayPrice.price != null
+                                ? `${displayPrice.price.toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm`
+                                : 'Narx belgilanmagan'}
+                        </p>
+                        {hasDiscount && (
+                            <p className='text-base text-gray-400 line-through'>
+                                {displayPrice.oldPrice.toLocaleString('fr-FR').replace(/\s/g, ' ')} so'm
+                            </p>
+                        )}
+                    </div>
+
+                    {description && (
+                        <div className='mt-5'>
+                            <h2 className='text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1'>
+                                Tavsif
+                            </h2>
+                            <p className='text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed'>
+                                {description}
+                            </p>
+                        </div>
+                    )}
+
+                    {(product.attributes || []).length > 0 && (
+                        <div className='mt-5'>
+                            <h2 className='text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2'>
+                                Xususiyatlari
+                            </h2>
+                            <div className='rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700'>
+                                {product.attributes.map(attr => (
+                                    <div
+                                        key={attr.name}
+                                        className='flex justify-between gap-3 px-3 py-2 odd:bg-gray-50 dark:odd:bg-gray-800/60'
+                                    >
+                                        <p className='text-gray-500 dark:text-gray-400 text-sm'>{attr.name}</p>
+                                        <p className='text-sm text-right font-medium'>{attr.value}</p>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </>
-                )}
+                        </div>
+                    )}
+                </div>
             </div>
-            {isBottom && (
-                <>
-                    <Link
-                        to={'/shop'}
-                        className='w-full py-2 rounded-md fixed text-center text-[rgb(22,113,98)] underline bottom-10 right-0 left-0 bg-white dark:bg-gray-900 dark:text-white'
-                    >
-                        Xaridlarga qaytish
-                    </Link>
+
+            {/* har doim ko'rinadi — oldin "isBottom" bo'lganda, ya'ni sahifa oxirigacha
+                skroll qilinganda gina chiqardi, bu esa qisqa savatga qo'shish tugmasini
+                topishni qiyinlashtirardi */}
+            <div
+                className='fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 pt-3'
+                style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+            >
+                {productCount > 0 ? (
+                    <div className='flex items-center justify-center gap-4'>
+                        <button
+                            onClick={() => changeQuantity(productCount - 1)}
+                            className='px-4 py-2 bg-[rgb(141,119,229)] rounded-lg text-white text-xl leading-none'
+                        >
+                            −
+                        </button>
+                        <input
+                            type='number'
+                            min='0'
+                            value={productCount}
+                            onChange={e => changeQuantity(Number(e.target.value))}
+                            title='Miqdor'
+                            className='w-16 text-center rounded-lg py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+                        />
+                        <button
+                            onClick={() => changeQuantity(productCount + 1)}
+                            className='px-4 py-2 bg-[rgb(141,119,229)] rounded-lg text-white text-xl leading-none'
+                        >
+                            +
+                        </button>
+                    </div>
+                ) : (
                     <button
                         onClick={addToCart}
                         disabled={displayPrice.price == null}
-                        className='bg-[rgb(22,113,98)] disabled:opacity-50 w-full py-2 text-white rounded-md fixed bottom-0 right-0 left-0'
+                        className='w-full py-3 bg-[rgb(141,119,229)] disabled:opacity-50 text-white rounded-lg font-medium'
                     >
-                        Savatga Qo'shish
+                        Savatga qo'shish
                     </button>
-                </>
-            )}
+                )}
+            </div>
         </div>
     );
 };
