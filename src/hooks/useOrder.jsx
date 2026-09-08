@@ -141,8 +141,13 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
   // only re-resolves from a raw prices[] array as a defensive fallback, and — like every
   // other price lookup in this app — never falls back to a USD-denominated entry
   const rawPriceFallback = item.price == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
-  const price = safeNumber(item.price ?? rawPriceFallback?.price ?? item.product?.price ?? 0, 0);
-  const oldPrice = safeNumber(item.oldPrice ?? rawPriceFallback?.oldPrice ?? price, price);
+  // the order payload must carry each product's ORIGINAL currency — a UZS-priced product
+  // stays UZS, a USD-only product stays USD — never the UZS-converted number shown to the
+  // customer in the basket/detail UI (item.price/currencyId). See lib/pricing.js: the
+  // backend rejects an empty/invalid currency.id, which the converted display price's
+  // currency would have for a USD-only product.
+  const price = safeNumber(item.orderPrice ?? rawPriceFallback?.order?.price ?? item.price ?? item.product?.price ?? 0, 0);
+  const oldPrice = safeNumber(item.orderOldPrice ?? rawPriceFallback?.order?.oldPrice ?? item.oldPrice ?? price, price);
   const productName = item.name || item.productName || item.product?.name || 'Mahsulot';
   const quantityStock = item.quantities?.[0]?.stock || item.stock || fallbackStock || { id: '', name: 'Asosiy sklad' };
   const measure = resolveMeasureInfo(item);
@@ -171,8 +176,8 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
     price: Number(price.toFixed(4)),
     oldPrice: Number(oldPrice.toFixed(4)),
     currency: {
-      name: item.currencyName || item.currency?.name || rawPriceFallback?.currency?.name || 'UZS',
-      id: item.currencyId || item.currency?.id || rawPriceFallback?.currency?.id || '',
+      name: item.orderCurrencyName || rawPriceFallback?.order?.currency?.name || item.currencyName || item.currency?.name || 'UZS',
+      id: item.orderCurrencyId || rawPriceFallback?.order?.currency?.id || item.currencyId || item.currency?.id || '',
     },
   };
 }
