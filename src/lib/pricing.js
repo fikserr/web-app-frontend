@@ -1,6 +1,13 @@
 import { decodeJwtPayload } from './auth'
 import { getUsdToUzsRate } from './appConfig'
 
+// Confirmed against a real product's own UZS price entries (e.g. "MUNIS FARA") — this
+// backend's actual so'm currency GUID. Used as the display currency.id for a USD-only
+// product's UZS-converted price, which otherwise has no real UZS price entry to draw an
+// id from and would submit an empty currency.id (the backend 400s: "currency.id" — see
+// resolveDisplayPrice's USD-fallback branch below).
+const UZS_CURRENCY_ID = '09fda8f8-6098-11f0-9fee-b48c9d79c2ce'
+
 // customer's assigned price tier (chakana/ulgurji/...) — decoded live from the JWT's
 // "jti" claim each time, same pattern as getContractorId() in auth.js
 export function getPriceTypeId() {
@@ -93,7 +100,9 @@ export function resolveDisplayPrice(product) {
       price: Number(chosen?.price ?? 0),
       oldPrice: Number(chosen?.oldPrice ?? chosen?.price ?? 0),
       currency: {
-        id: chosen?.currency?.id || chosen?.currency?.Id || '',
+        // a UZS price entry with no currency.id of its own (seen in real product data)
+        // would otherwise submit blank and get the same 400 as the USD-fallback case
+        id: chosen?.currency?.id || chosen?.currency?.Id || UZS_CURRENCY_ID,
         name: chosen?.currency?.name || chosen?.currency?.Name || 'UZS',
       },
     }
@@ -119,7 +128,7 @@ export function resolveDisplayPrice(product) {
     return {
       price: Math.round(usdPrice * rate),
       oldPrice: Math.round(usdOldPrice * rate),
-      currency: { id: '', name: 'UZS' },
+      currency: { id: UZS_CURRENCY_ID, name: 'UZS' },
       order: {
         price: usdPrice,
         oldPrice: usdOldPrice,
