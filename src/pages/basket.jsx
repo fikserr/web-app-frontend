@@ -39,49 +39,61 @@ const Basket = () => {
 			})
 		}
 
+		const products = basket.map(item => {
+			const productId = item.productId || item.Id || item.id;
+			const quantity = counts[productId]?.count || 0;
+			// item.orderPrice/orderCurrency* is already resolved (see useAddBasket.jsx) — a
+			// USD-only product keeps its real USD price + currency.id here (the backend
+			// applies the order's own `rate` field to convert it), while item.price/currency
+			// stay UZS purely for what's shown on screen. This fallback only re-resolves from
+			// a raw prices[] array in the rare case orderPrice wasn't already set.
+			const rawPriceFallback = item.orderPrice == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
+			const price = Number(item.orderPrice ?? rawPriceFallback?.order?.price ?? item.price ?? 0);
+			const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
+
+			return {
+				product: {
+					id: productId,
+					name: item.name || item.productName || 'Mahsulot',
+				},
+				bundleItems: [],
+				quantities: [
+					{
+						stock: { id: '09fda8f3-6098-11f0-9fee-b48c9d79c2ce', name: 'Asosiy sklad' },
+						quantity,
+						measure: {
+							name: measure.name || 'шт',
+							id: measure.Id || measure.id || '09fda8fe-6098-11f0-9fee-b48c9d79c2ce',
+						},
+						remainder: 0,
+						amount: Number((quantity * price).toFixed(4)),
+					},
+				],
+				price: Number(price.toFixed(4)),
+				oldPrice: Number((item.orderOldPrice ?? rawPriceFallback?.order?.oldPrice ?? price).toFixed(4)),
+				currency: {
+					name: item.orderCurrencyName || rawPriceFallback?.order?.currency?.name || 'UZS',
+					id: item.orderCurrencyId || rawPriceFallback?.order?.currency?.id || '',
+				},
+			};
+		})
+
+		// HYPOTHESIS, pending backend confirmation: saleType was always hardcoded to 'sum'
+		// regardless of what currency the lines were in, which lines up with every order —
+		// even dollar-priced ones — landing entirely under 1C's "Jami. so'm" with "Jami. val"
+		// staying blank. The payload's Sum/Val field pairing throughout (paymentSum/paymentVal,
+		// discountSum/discountVal, changeAmountSum/changeAmountVal) suggests saleType picks
+		// which of those two the order is denominated in — so a cart holding any non-UZS line
+		// should switch it to 'val'. Needs a real test order to confirm 'val' is an accepted
+		// value and that it actually lands the total under "Jami. val".
+		const hasForeignCurrencyLine = products.some(p => p.currency?.name && p.currency.name !== 'UZS')
+
 		const orderData = {
 			userId: String(getUserId() || ''),
 			UUID: generateUuidFallback(),
 			comment: comment?.trim() || '',
-			saleType: 'sum',
-			products: basket.map(item => {
-				const productId = item.productId || item.Id || item.id;
-				const quantity = counts[productId]?.count || 0;
-				// item.orderPrice/orderCurrency* is already resolved (see useAddBasket.jsx) — a
-				// USD-only product keeps its real USD price + currency.id here (the backend
-				// applies the order's own `rate` field to convert it), while item.price/currency
-				// stay UZS purely for what's shown on screen. This fallback only re-resolves from
-				// a raw prices[] array in the rare case orderPrice wasn't already set.
-				const rawPriceFallback = item.orderPrice == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
-				const price = Number(item.orderPrice ?? rawPriceFallback?.order?.price ?? item.price ?? 0);
-				const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
-
-				return {
-					product: {
-						id: productId,
-						name: item.name || item.productName || 'Mahsulot',
-					},
-					bundleItems: [],
-					quantities: [
-						{
-							stock: { id: '09fda8f3-6098-11f0-9fee-b48c9d79c2ce', name: 'Asosiy sklad' },
-							quantity,
-							measure: {
-								name: measure.name || 'шт',
-								id: measure.Id || measure.id || '09fda8fe-6098-11f0-9fee-b48c9d79c2ce',
-							},
-							remainder: 0,
-							amount: Number((quantity * price).toFixed(4)),
-						},
-					],
-					price: Number(price.toFixed(4)),
-					oldPrice: Number((item.orderOldPrice ?? rawPriceFallback?.order?.oldPrice ?? price).toFixed(4)),
-					currency: {
-						name: item.orderCurrencyName || rawPriceFallback?.order?.currency?.name || 'UZS',
-						id: item.orderCurrencyId || rawPriceFallback?.order?.currency?.id || '',
-					},
-				};
-			}),
+			saleType: hasForeignCurrencyLine ? 'val' : 'sum',
+			products,
 		}
 
 		if (submitting) return
