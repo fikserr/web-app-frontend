@@ -55,7 +55,7 @@ const Detail = () => {
     const addToCart = () => {
         try {
             updateQuantity(product, productCount + 1)
-            toast.success('Mahsulot savatga qo‘shildi')
+            toast.success('Mahsulot savatga qo‘shildi', { duration: 2000 })
         } catch (e) {
             console.error('Add to cart error', e)
             toast.error('Savatga qo‘shishda xatolik')

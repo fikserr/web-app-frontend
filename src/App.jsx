@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import BackButton from './components/BackButton'
 import Bar from './components/bar'
 import Header from './components/header'
 import { Toaster } from './components/ui/sonner'
@@ -15,6 +16,7 @@ const App = () => {
 	return (
 		<div className='h-full dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300'>
 			<Header />
+			<BackButton />
 			<main className=''>
 				<Outlet />
 			</main>
