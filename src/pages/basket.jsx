@@ -78,21 +78,16 @@ const Basket = () => {
 			};
 		})
 
-		// HYPOTHESIS, pending backend confirmation: saleType was always hardcoded to 'sum'
-		// regardless of what currency the lines were in, which lines up with every order —
-		// even dollar-priced ones — landing entirely under 1C's "Jami. so'm" with "Jami. val"
-		// staying blank. The payload's Sum/Val field pairing throughout (paymentSum/paymentVal,
-		// discountSum/discountVal, changeAmountSum/changeAmountVal) suggests saleType picks
-		// which of those two the order is denominated in — so a cart holding any non-UZS line
-		// should switch it to 'val'. Needs a real test order to confirm 'val' is an accepted
-		// value and that it actually lands the total under "Jami. val".
-		const hasForeignCurrencyLine = products.some(p => p.currency?.name && p.currency.name !== 'UZS')
-
+		// Tried saleType: 'val' for carts with a non-UZS line as a hypothesis for why "Jami.
+		// val" always stayed blank — a real test order came back with BOTH "Jami. so'm" AND
+		// "Jami. val" blank, worse than the 'sum' default, so 'val' is not the right value.
+		// Reverted to always 'sum' pending real backend/1C documentation on how a
+		// mixed-currency order should split its per-line totals.
 		const orderData = {
 			userId: String(getUserId() || ''),
 			UUID: generateUuidFallback(),
 			comment: comment?.trim() || '',
-			saleType: hasForeignCurrencyLine ? 'val' : 'sum',
+			saleType: 'sum',
 			products,
 		}
 
