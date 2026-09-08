@@ -33,13 +33,11 @@ function waitForTelegramReady(maxAttempts = 30, delayMs = 100) {
       const tg = window?.Telegram?.WebApp
 
       if (tg?.initData) {
-        console.log('[Boot] Telegram initData tayyor, urinish:', attempts, 'userId:', tg?.initDataUnsafe?.user?.id)
         resolve(true)
         return
       }
 
       if (attempts >= maxAttempts) {
-        console.warn('[Boot] Telegram initData topilmadi,', attempts, 'urinishdan keyin')
         resolve(false)
         return
       }
@@ -79,18 +77,16 @@ function scheduleAuthRecovery() {
         if (res?.token) {
           clearInterval(timer)
           sessionStorage.setItem('authRecoveryReloaded', '1')
-          console.log('[Boot] Kechikkan login muvaffaqiyatli — sahifa bir marta qayta yuklanmoqda')
           window.location.reload()
           return
         }
-      } catch (e) {
-        console.warn('[Boot] Kechikkan login urinishi muvaffaqiyatsiz, qayta urinib ko\'riladi:', e)
+      } catch {
+        // ignore — the interval keeps retrying until maxAttempts
       }
     }
 
     if (attempts >= maxAttempts) {
       clearInterval(timer)
-      console.warn('[Boot] Auth recovery', attempts, 'urinishdan keyin to\'xtatildi')
     }
   }, 500)
 }
@@ -112,26 +108,16 @@ async function boot() {
     const needsFreshLogin = !existingToken || isTokenExpired(existingToken)
 
     if (!needsFreshLogin) {
-      console.log('[Boot] Existing token found and still valid, keeping it for this session')
       scheduleTokenRefreshForExistingToken()
-    } else if (existingToken) {
-      console.log('[Boot] Existing token found but expired — refreshing before first render')
-    } else {
-      console.log('[Boot] No token found; attempting fresh login flow')
     }
 
     const telegramReady = await waitForTelegramReady()
 
-    if (!telegramReady) {
-      console.error('[Boot] Telegram initData topilmadi — login o\'tkazib yuborildi')
-    } else if (needsFreshLogin) {
-      const res = await loginViaTelegram()
-      if (res?.token) {
-        console.log('[Boot] ✅ Fresh login successful')
-      }
+    if (telegramReady && needsFreshLogin) {
+      await loginViaTelegram()
     }
-  } catch (e) {
-    console.warn('Auto-login failed:', e)
+  } catch {
+    // ignore — scheduleAuthRecovery() below keeps retrying in the background
   }
 
   // Warm the /config cache (USD→UZS rate + home page title/text) in the background —

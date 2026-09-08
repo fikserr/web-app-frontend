@@ -21,7 +21,6 @@ const Shop = () => {
 		const storedCategory = localStorage.getItem('selectedCategory')
 		if (storedCategory) {
 			setSelectedCategory(JSON.parse(storedCategory))
-			// console.log('Loaded category from storage:', JSON.parse(storedCategory))
 		}
 	}, [])
 
@@ -53,11 +52,6 @@ const Shop = () => {
 				.includes(searchTerm.toLowerCase())
 		)
 	}, [products, searchTerm])
-
-	console.log('[Shop] Products:', products);
-	console.log('[Shop] Loading:', productsLoading);
-	console.log('[Shop] Error:', productsError);
-	console.log('[Shop] Filtered Products:', filteredProducts);
 
 	// registered is undefined until /config resolves — treat that as still-loading too
 	const isLoading = productsLoading || registered === undefined

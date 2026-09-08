@@ -19,8 +19,6 @@ function PaymentModal({
   const safeHandle = type => {
     if (typeof handleConfirmOrder === 'function') {
       handleConfirmOrder(type)
-    } else {
-      console.error('handleConfirmOrder is not a function.')
     }
   }
 

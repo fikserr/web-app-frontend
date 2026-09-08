@@ -249,13 +249,9 @@ export default function useOrder() {
         products: validProducts.length ? validProducts : (orderData?.products || []),
       };
 
-      console.log('[Order] POST payload to /documents/orders:', JSON.stringify(payload, null, 2));
-
       const res = await api.post('/documents/orders', payload);
       return res.data;
     } catch (err) {
-      console.error('❌ useOrder error:', err);
-      console.error('[Order] backend response data:', JSON.stringify(err?.response?.data, null, 2));
       const backendMessage = Array.isArray(err?.response?.data?.errorMessage)
         ? err.response.data.errorMessage.join('; ')
         : err?.response?.data?.errorMessage;

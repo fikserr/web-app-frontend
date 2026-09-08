@@ -42,8 +42,7 @@ export function fetchAppConfig() {
       }
       return cache
     })
-    .catch((err) => {
-      console.warn('[Config] /config fetch failed:', err)
+    .catch(() => {
       // keep whatever we had before (or null) so callers fall back to defaults
       return cache
     })

@@ -16,16 +16,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   try {
     const token = localStorage.getItem('token')
-    const hasToken = !!token
-    console.log('[Auth] request start:', {
-      url: config.url,
-      method: config.method?.toUpperCase(),
-      hasToken,
-      headers: config.headers,
-    })
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('[Auth] JWT decoded payload:', decodeJwtPayload(token))
     }
 
     // ✅ Add userId as query parameter for GET requests
@@ -33,13 +25,12 @@ api.interceptors.request.use((config) => {
       const userId = getUserId()
       if (userId) {
         config.params = { ...config.params, userId }
-        console.log('[Auth] Added userId to query params:', userId)
       }
     }
 
     // ❌ Removed x-customer-id header - backend doesn't expect it
-  } catch (e) {
-    console.warn('[Auth] request interceptor error:', e)
+  } catch {
+    // ignore — request proceeds without the token/userId enrichment above
   }
   return config
 })
@@ -52,7 +43,6 @@ export function setToken(token, options = {}) {
   if (token) {
     localStorage.setItem('token', token)
     api.defaults.headers.Authorization = `Bearer ${token}`
-    console.log('[Auth] token saved and JWT payload:', decodeJwtPayload(token))
 
     // if login returned a refresh token or server URL, handle them.
     // NOTE: apiBaseURL is intentionally still persisted — unlike userId/customerId it
@@ -65,7 +55,6 @@ export function setToken(token, options = {}) {
     if (options.refreshToken) {
       _refreshToken = options.refreshToken
       localStorage.setItem('refreshToken', _refreshToken)
-      console.log('[Auth] Refresh token stored (valid for 30 days)')
     }
     if (options.baseURL) {
       api.defaults.baseURL = options.baseURL
@@ -89,7 +78,6 @@ export function setToken(token, options = {}) {
       clearTimeout(_refreshTimer)
       _refreshTimer = null
     }
-    console.log('[Auth] Token cleared')
   }
 }
 
@@ -100,18 +88,11 @@ function scheduleTokenRefresh(remainingSeconds) {
   const refreshAfter = Math.floor(remainingSeconds * 0.8)
   const ms = Math.max(5000, refreshAfter * 1000)
 
-  console.log('[Auth] Token refresh scheduled:', {
-    remainingSec: remainingSeconds,
-    refreshAfterSec: refreshAfter,
-    refreshAfterMin: Math.round(refreshAfter / 60),
-  })
-
   _refreshTimer = setTimeout(async () => {
     try {
-      console.log('[Auth] Automatic token refresh triggered')
       await refreshOrRelogin()
-    } catch (e) {
-      console.warn('Scheduled token refresh failed:', e)
+    } catch {
+      // ignore — refreshOrRelogin() already handles its own total-failure fallback
     }
   }, ms)
 }
@@ -126,15 +107,13 @@ export function scheduleTokenRefreshFromToken(token) {
 
   const payload = decodeJwtPayload(token)
   if (typeof payload?.exp !== 'number') {
-    console.warn('[Auth] Token has no "exp" claim — proactive refresh not armed, relying on reactive 401 refresh')
     return
   }
 
   const remainingSec = payload.exp - Math.floor(Date.now() / 1000)
 
   if (remainingSec <= 0) {
-    console.log('[Auth] Token already expired — refreshing now')
-    refreshOrRelogin().catch((e) => console.warn('[Auth] Immediate refresh failed:', e))
+    refreshOrRelogin().catch(() => {})
     return
   }
 
@@ -155,7 +134,6 @@ if (typeof document !== 'undefined') {
     if (document.visibilityState !== 'visible') return
     const token = localStorage.getItem('token')
     if (!token) return
-    console.log('[Auth] Tab became visible — re-checking token freshness')
     scheduleTokenRefreshFromToken(token)
   })
 }
@@ -185,14 +163,12 @@ export function loginViaTelegram() {
     if (!initData) throw new Error('Telegram initData mavjud emas')
 
     const res = await axios.post('/api/login', { initData })
-    console.log('[Auth] login response:', res?.data)
     const content = res?.data?.data?.content || {}
     const token = content?.accesToken || res?.data?.token || res?.data?.accessToken
     const refresh = content?.refreshToken || res?.data?.refreshToken
     const baseURL = content?.URL || undefined
     if (baseURL) api.defaults.baseURL = baseURL
     if (token) {
-      console.log('[Auth] login JWT payload:', decodeJwtPayload(token))
       setToken(token, { refreshToken: refresh, baseURL })
     }
     return { token, refresh, baseURL }
@@ -226,15 +202,11 @@ export function refreshTokenRequest() {
     const refreshToken = _refreshToken || localStorage.getItem('refreshToken')
     if (!refreshToken) throw new Error('No refresh token available')
 
-    console.log('[Auth] Attempting to refresh access token...')
     const res = await api.post(refreshPath, { refreshToken })
-    console.log('[Auth] refresh response:', res?.data)
     const content = res?.data?.data?.content || {}
     const token = content?.accesToken || res?.data?.accessToken || res?.data?.token
     const refresh = content?.refreshToken || res?.data?.refreshToken
     if (token) {
-      console.log('[Auth] ✅ Access token refreshed successfully')
-      console.log('[Auth] refreshed JWT payload:', decodeJwtPayload(token))
       setToken(token, { refreshToken: refresh })
     }
     return { token, refresh }
@@ -257,12 +229,10 @@ export function refreshTokenRequest() {
 async function refreshOrRelogin() {
   try {
     return await refreshTokenRequest()
-  } catch (refreshErr) {
-    console.warn('[Auth] Refresh failed, attempting a fresh Telegram login instead:', refreshErr)
+  } catch {
     try {
       return await loginViaTelegram()
     } catch (loginErr) {
-      console.warn('[Auth] Fresh login also failed:', loginErr)
       setToken(null)
       throw loginErr
     }
@@ -272,23 +242,8 @@ async function refreshOrRelogin() {
 // Response interceptor to try refresh (falling back to a fresh login) on 401, and retry
 // the original request once
 api.interceptors.response.use(
-  res => {
-    console.log('[Auth] response:', {
-      url: res.config?.url,
-      method: res.config?.method?.toUpperCase(),
-      status: res.status,
-      data: res.data,
-    })
-    return res
-  },
+  res => res,
   async err => {
-    console.error('[Auth] response error:', {
-      url: err?.config?.url,
-      method: err?.config?.method?.toUpperCase(),
-      status: err?.response?.status,
-      data: err?.response?.data,
-    })
-
     const originalReq = err.config
     const status = err.response?.status
 
@@ -311,10 +266,6 @@ api.interceptors.response.use(
         // refreshOrRelogin() already cleared the token on total failure
         return Promise.reject(refreshErr)
       }
-    }
-
-    if (status === 402) {
-      console.warn('[Auth] Payment required by backend even after a fresh token — likely a genuine backend-side billing/licensing issue, not a stale session.')
     }
 
     return Promise.reject(err)

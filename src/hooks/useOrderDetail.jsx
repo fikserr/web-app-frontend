@@ -65,7 +65,6 @@ function useOrderDetail() {
 
         setDetailsByOrderId((prev) => ({ ...prev, [orderUUID]: rows }));
       } catch (err) {
-        console.error("[OrderDetail] fetch error:", err);
         const backendMessage = Array.isArray(err?.response?.data?.errorMessage)
           ? err.response.data.errorMessage.map((e) => e.message || e).join("; ")
           : err?.response?.data?.errorMessage;

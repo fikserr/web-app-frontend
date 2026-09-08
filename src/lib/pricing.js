@@ -87,14 +87,7 @@ export function resolveDisplayPrice(product) {
   const uzsPick = pickForPriceType(uzsEntries)
 
   if (uzsPick) {
-    const { entry: chosen, matched } = uzsPick
-    if (!matched && priceTypeId) {
-      console.warn('[Pricing] Mijozning priceType\'iga mos UZS narx topilmadi, birinchi UZS narx ishlatildi', {
-        productId: product?.id || product?.Id,
-        expectedPriceTypeId: priceTypeId,
-        availablePriceTypeIds: uzsEntries.map(priceTypeIdOf),
-      })
-    }
+    const { entry: chosen } = uzsPick
 
     const value = {
       price: Number(chosen?.price ?? 0),
@@ -119,11 +112,6 @@ export function resolveDisplayPrice(product) {
     const rate = getUsdToUzsRate()
     const usdPrice = Number(chosen?.price ?? 0)
     const usdOldPrice = Number(chosen?.oldPrice ?? chosen?.price ?? 0)
-    console.info('[Pricing] UZS narx yo\'q, USD narxdan hisoblandi', {
-      productId: product?.id || product?.Id,
-      usdPrice,
-      rate,
-    })
 
     return {
       price: Math.round(usdPrice * rate),

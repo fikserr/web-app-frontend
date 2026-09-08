@@ -52,7 +52,6 @@ const Categories = () => {
 			}))
 		)
 	}
-	console.log(userId, 'userId')
 	return (
 		<div className='w-full'>
 			<RegisterBanner registered={registered} loading={isLoading} />

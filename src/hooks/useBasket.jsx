@@ -12,8 +12,7 @@ const useBasket = () => {
         try {
           const parsed = JSON.parse(saved);
           setBasket(Object.values(parsed)); // object → array
-        } catch (e) {
-          console.error("❌ Basket parse error:", e);
+        } catch {
           setBasket([]);
         }
       } else {

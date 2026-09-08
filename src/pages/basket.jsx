@@ -136,7 +136,6 @@ const Basket = () => {
 				},
 			})
 		} catch (err) {
-			console.error('❌ Buyurtma xatolik:', err)
 			setShowErrorModal(true)
 			setShowPaymentModal(false)
 			const backendMessage = Array.isArray(err?.response?.data?.errorMessage)

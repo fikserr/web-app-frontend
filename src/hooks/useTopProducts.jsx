@@ -16,7 +16,6 @@ export default function useTopProducts({ userId }) {
           params: { userId },
           signal,
         });
-        console.log('[TopProducts] API Response:', res.data);
         setRegistered(res.data?.data?.registered || false);
         const rawProducts = res.data?.data?.content || [];
         // this endpoint doesn't return the flat "imageUrl" field the other product
@@ -36,7 +35,6 @@ export default function useTopProducts({ userId }) {
       } catch (err) {
         if (err.name !== "CanceledError") {
           setError(err.message);
-          console.error('[TopProducts] Fetch error:', err);
         }
         setProducts([]);
       } finally {

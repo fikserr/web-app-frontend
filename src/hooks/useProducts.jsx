@@ -39,16 +39,13 @@ export default function useProducts({
           },
           signal,
         });
-        console.log('[Products] API Response:', res.data);
         setRegistered(res.data?.data?.registered || false);
         const productsData = res.data?.data?.content || [];
-        console.log('[Products] Extracted products:', productsData);
         setProducts(productsData);
         setError(null);
       } catch (err) {
         if (err.name !== "CanceledError") {
           setError(err.message);
-          console.error('[Products] Fetch error:', err);
         }
         setProducts([]);
       } finally {

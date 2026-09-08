@@ -12,8 +12,7 @@ export function decodeJwtPayload(token) {
     const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0))
     const jsonStr = new TextDecoder('utf-8').decode(bytes)
     return JSON.parse(jsonStr)
-  } catch (e) {
-    console.warn('[Auth] JWT decode failed:', e)
+  } catch {
     return {}
   }
 }

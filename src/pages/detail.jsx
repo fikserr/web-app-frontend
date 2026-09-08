@@ -33,8 +33,8 @@ const Detail = () => {
                 const r2 = await api.get('/product', { params: { id } })
                 const p2 = r2.data?.data?.[0] || r2.data?.data || r2.data || null
                 if (!cancelled) setProduct(p2)
-            } catch (e) {
-                console.error('Product fetch error', e)
+            } catch {
+                // ignore — product stays null, "Mahsulot topilmadi" renders below
             }
         }).finally(() => {
             if (!cancelled) setLoading(false)
@@ -56,8 +56,7 @@ const Detail = () => {
         try {
             updateQuantity(product, productCount + 1)
             toast.success('Mahsulot savatga qo‘shildi', { duration: 2000 })
-        } catch (e) {
-            console.error('Add to cart error', e)
+        } catch {
             toast.error('Savatga qo‘shishda xatolik')
         }
     }
@@ -68,8 +67,7 @@ const Detail = () => {
     const changeQuantity = qty => {
         try {
             updateQuantity(product, qty)
-        } catch (e) {
-            console.error('Update quantity error', e)
+        } catch {
             toast.error('Savatga qo‘shishda xatolik')
         }
     }
