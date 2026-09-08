@@ -39,16 +39,19 @@ const Basket = () => {
 			})
 		}
 
+		// Sending USD-priced lines in their own native currency was tried four different ways
+		// (saleType='val', saleType='sum' with per-line currency, an order-level currency
+		// field, computed paymentSum/paymentVal) — every one of them still landed the whole
+		// order under 1C's "Jami. so'm" with "Jami. val" blank, so whatever "Jami. val" keys
+		// off isn't reachable from this payload. Falling back to what already reliably works:
+		// convert every line to so'm before submitting (item.price/oldPrice/currency are
+		// always the UZS-converted display values from useAddBasket.jsx) so the order total
+		// so'm figure is at least correct, instead of a dollar amount stranded under so'm.
 		const products = basket.map(item => {
 			const productId = item.productId || item.Id || item.id;
 			const quantity = counts[productId]?.count || 0;
-			// item.orderPrice/orderCurrency* is already resolved (see useAddBasket.jsx) — a
-			// USD-only product keeps its real USD price + currency.id here (the backend
-			// applies the order's own `rate` field to convert it), while item.price/currency
-			// stay UZS purely for what's shown on screen. This fallback only re-resolves from
-			// a raw prices[] array in the rare case orderPrice wasn't already set.
-			const rawPriceFallback = item.orderPrice == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
-			const price = Number(item.orderPrice ?? rawPriceFallback?.order?.price ?? item.price ?? 0);
+			const rawPriceFallback = item.price == null && Array.isArray(item.prices) ? resolveDisplayPrice(item) : null;
+			const price = Number(item.price ?? rawPriceFallback?.price ?? 0);
 			const measure = item.measures?.[0] || item.measure || { id: '09fda8fe-6098-11f0-9fee-b48c9d79c2ce', name: 'шт' };
 
 			return {
@@ -70,39 +73,19 @@ const Basket = () => {
 					},
 				],
 				price: Number(price.toFixed(4)),
-				oldPrice: Number((item.orderOldPrice ?? rawPriceFallback?.order?.oldPrice ?? price).toFixed(4)),
+				oldPrice: Number((item.oldPrice ?? rawPriceFallback?.oldPrice ?? price).toFixed(4)),
 				currency: {
-					name: item.orderCurrencyName || rawPriceFallback?.order?.currency?.name || 'UZS',
-					id: item.orderCurrencyId || rawPriceFallback?.order?.currency?.id || '',
+					name: item.currencyName || rawPriceFallback?.currency?.name || 'UZS',
+					id: item.currencyId || rawPriceFallback?.currency?.id || '',
 				},
 			};
 		})
-
-		// Ruled out: saleType: 'val' broke both "Jami. so'm" and "Jami. val"; saleType back at
-		// 'sum' with per-line currency alone (the original behavior) put every line — UZS and
-		// USD alike — into "Jami. so'm"; adding an order-level `currency` field mirrored from
-		// the foreign-currency line changed nothing either. None of those touched paymentSum/
-		// paymentVal, which we always sent as 0/0.
-		//
-		// paymentSum/paymentVal is how much of the order is being settled in so'm vs in
-		// foreign currency — "Jami. so'm"/"Jami. val" reflects THAT split, not each line's own
-		// currency tag. So it needs to be computed from the lines and sent explicitly: the
-		// so'm-priced lines' amounts into paymentSum, the USD-priced lines' amounts (already in
-		// their own native USD amount, per quantities[0].amount above) into paymentVal.
-		const paymentSum = products
-			.filter(p => (p.currency?.name || 'UZS') === 'UZS')
-			.reduce((sum, p) => sum + Number(p.quantities?.[0]?.amount || 0), 0)
-		const paymentVal = products
-			.filter(p => (p.currency?.name || 'UZS') !== 'UZS')
-			.reduce((sum, p) => sum + Number(p.quantities?.[0]?.amount || 0), 0)
 
 		const orderData = {
 			userId: String(getUserId() || ''),
 			UUID: generateUuidFallback(),
 			comment: comment?.trim() || '',
 			saleType: 'sum',
-			paymentSum: Number(paymentSum.toFixed(4)),
-			paymentVal: Number(paymentVal.toFixed(4)),
 			products,
 		}
 
