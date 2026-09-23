@@ -19,36 +19,143 @@ import useTelegramUserId from '../hooks/useTelegramUserId'
 import nothingFound from '../icons/nothingFound.gif'
 import { getUsdToUzsRate } from '../lib/appConfig'
 
-// shape confirmed against a real /documents/orders/detail response: each product row is
-// { product: {id,name}, barcode, currency: {id,name}, price, quantities: [{stock,measure,quantity,amount,remainder}], bundleItems }
+// Product rowni normalizatsiya qilish
 const normalizeDetailRow = (row, index, orderId) => {
 	const product = row.product || row.Product || {}
 	const measure = row.measure || row.quantities?.[0]?.measure || {}
 	const currency = row.currency || {}
-	const quantity = Number(row.quantity ?? row.quantities?.[0]?.quantity ?? row.qty ?? 0)
-	const price = Number(row.price ?? row.quantities?.[0]?.price ?? 0)
+
+	const quantity = Number(
+		row.quantity ??
+			row.quantities?.[0]?.quantity ??
+			row.qty ??
+			0
+	)
+
+	const price = Number(
+		row.price ??
+			row.quantities?.[0]?.price ??
+			0
+	)
+
+	const currencyName =
+		currency.name ??
+		row.currencyName ??
+		row.currency_name ??
+		'UZS'
 
 	return {
-		key: row.id ?? row.Id ?? product.id ?? row.productId ?? row.product_id ?? `${orderId}-${index}`,
-		name: product.name ?? row.productName ?? row.product_name ?? row.name ?? 'Mahsulot',
+		key:
+			row.id ??
+			row.Id ??
+			product.id ??
+			row.productId ??
+			row.product_id ??
+			`${orderId}-${index}`,
+
+		name:
+			product.name ??
+			row.productName ??
+			row.product_name ??
+			row.name ??
+			'Mahsulot',
+
 		quantity,
-		measureName: measure.name ?? row.measureName ?? row.measurName ?? row.unitName ?? '',
+
+		measureName:
+			measure.name ??
+			row.measureName ??
+			row.measurName ??
+			row.unitName ??
+			'',
+
 		price,
-		currencyName: currency.name ?? row.currencyName ?? 'UZS',
-		amount: Number(row.amount ?? row.quantities?.[0]?.amount ?? quantity * price),
+
+		currencyName,
+
+		amount: Number(
+			row.amount ??
+				row.quantities?.[0]?.amount ??
+				quantity * price
+		),
 	}
 }
 
-// backend "DD.MM.YYYY HH:MM:SS" formatida sana yuboradi — new Date() buni ishonchli parse qilolmaydi
+// Backend "DD.MM.YYYY HH:MM:SS" formatida sana yuboradi
 const parseOrderDate = value => {
 	if (!value) return null
-	const match = /^(\d{2})\.(\d{2})\.(\d{4})[ T](\d{1,2}):(\d{2}):(\d{2})$/.exec(value)
+
+	const match =
+		/^(\d{2})\.(\d{2})\.(\d{4})[ T](\d{1,2}):(\d{2}):(\d{2})$/.exec(
+			value
+		)
+
 	if (match) {
 		const [, day, month, year, hour, minute, second] = match
-		return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second))
+
+		return new Date(
+			Number(year),
+			Number(month) - 1,
+			Number(day),
+			Number(hour),
+			Number(minute),
+			Number(second)
+		)
 	}
+
 	const fallback = new Date(value)
+
 	return Number.isNaN(fallback.getTime()) ? null : fallback
+}
+
+// Valyutani aniqlash
+const getCurrencyName = order => {
+	const currency =
+		order.currency ||
+		order.Currency ||
+		order.document?.currency ||
+		order.document?.Currency ||
+		{}
+
+	if (typeof currency === 'string') {
+		return currency.toUpperCase()
+	}
+
+	return String(
+		currency?.name ??
+			currency?.Name ??
+			order.currencyName ??
+			order.currency_name ??
+			order.document?.currencyName ??
+			'UZS'
+	).toUpperCase()
+}
+
+// Summani to'g'ri hisoblash
+const getOrderTotal = order => {
+	const amount = Number(order.amountToPaySum ?? 0)
+
+	if (!Number.isFinite(amount)) {
+		return 0
+	}
+
+	const currency = getCurrencyName(order)
+
+	// Faqat USD bo'lsa kursga ko'paytiramiz
+	if (currency === 'USD' || currency === '$' || currency.includes('DOLLAR')) {
+		return Math.round(amount * getUsdToUzsRate())
+	}
+
+	// UZS bo'lsa kelgan summani o'zini ko'rsatamiz
+	return amount
+}
+
+const formatNumber = value => {
+	return Number(value)
+		.toLocaleString('fr-FR', {
+			maximumFractionDigits: 4,
+		})
+		.replace(/\s/g, ' ')
 }
 
 const OrderList = () => {
@@ -56,31 +163,51 @@ const OrderList = () => {
 	const pageSize = 20
 	const userId = useTelegramUserId()
 
-	const { orders, loading, error, meta, registered } = useOrderList(
+	const {
+		orders,
+		loading,
+		error,
+		meta,
+		registered,
+	} = useOrderList(
 		userId,
 		page,
 		pageSize
 	)
-	// re-renders once the live USD→UZS rate arrives from /config (see lib/appConfig.js),
-	// same pattern as card.jsx — order totals below are converted with it
+
+	// USD kursi kerak bo'lsa shu hook orqali olinadi
 	useAppConfig()
+
 	const [expandedOrders, setExpandedOrders] = useState({})
-	const { detailsByOrderId, loadingOrderId, errorByOrderId, fetchOrderDetail } = useOrderDetail()
+
+	const {
+		detailsByOrderId,
+		loadingOrderId,
+		errorByOrderId,
+		fetchOrderDetail,
+	} = useOrderDetail()
 
 	const toggleProducts = orderId => {
 		const opening = !expandedOrders[orderId]
+
 		setExpandedOrders(prev => ({
 			...prev,
 			[orderId]: opening,
 		}))
-		if (opening) fetchOrderDetail(orderId, userId)
+
+		if (opening) {
+			fetchOrderDetail(orderId, userId)
+		}
 	}
 
 	useEffect(() => {
-		window.scrollTo({ top: 0, behavior: 'smooth' })
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth',
+		})
 	}, [page])
 
-	if (loading)
+	if (loading) {
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
@@ -90,7 +217,9 @@ const OrderList = () => {
 				/>
 			</div>
 		)
-	if (error)
+	}
+
+	if (error) {
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
@@ -99,7 +228,9 @@ const OrderList = () => {
 				/>
 			</div>
 		)
-	if (!registered)
+	}
+
+	if (!registered) {
 		return (
 			<div className='w-full fixed top-0 left-0 pt-16'>
 				<RegisterBanner
@@ -108,40 +239,85 @@ const OrderList = () => {
 				/>
 			</div>
 		)
+	}
 
 	const totalPages = Number(meta?.lastPage) || 1
 
 	// Build visible pages: current, current+1, lastPage
 	const pagesToShow = [page]
-	if (page + 1 <= totalPages) pagesToShow.push(page + 1)
-	if (page + 1 < totalPages - 1) pagesToShow.push('ellipsis')
-	if (totalPages > 1 && !pagesToShow.includes(totalPages))
+
+	if (page + 1 <= totalPages) {
+		pagesToShow.push(page + 1)
+	}
+
+	if (page + 1 < totalPages - 1) {
+		pagesToShow.push('ellipsis')
+	}
+
+	if (totalPages > 1 && !pagesToShow.includes(totalPages)) {
 		pagesToShow.push(totalPages)
+	}
 
 	return (
-		<div className={`my-20 px-3`}>
+		<div className='my-20 px-3'>
 			{orders.length > 0 ? (
 				orders.map(order => {
-					// "document.id" is the confirmed stable GUID for an order — "UUID" on this
-					// backend is unreliable (often blank or a garbled non-GUID value)
-					const orderId = order.document?.id ?? order.UUID ?? order.Id ?? order.id ?? order.orderId ?? order.code ?? order.number
-					// the list endpoint only returns a count ("productsCount") — the actual line
-					// items are fetched lazily via useOrderDetail when this order is expanded
-					const productsCount = Number(order.productsCount ?? 0)
-					const detailRows = detailsByOrderId[orderId]
-					const productList = Array.isArray(detailRows) ? detailRows.map((row, index) => normalizeDetailRow(row, index, orderId)) : []
-					const isLoadingProducts = loadingOrderId === orderId
-					const productsError = errorByOrderId[orderId]
-					// amountToPaySum comes back from the backend denominated in USD (not UZS,
-					// despite the field name) — convert with the live rate so the total shown
-					// here matches the so'm amounts on the receipt, same as card.jsx does for
-					// USD-only product prices (see lib/pricing.js)
-					const orderTotal = Math.round(Number(order.amountToPaySum ?? 0) * getUsdToUzsRate())
+					// Order ID
+					const orderId =
+						order.document?.id ??
+						order.UUID ??
+						order.Id ??
+						order.id ??
+						order.orderId ??
+						order.code ??
+						order.number
+
+					// Mahsulotlar soni
+					const productsCount = Number(
+						order.productsCount ?? 0
+					)
+
+					// Detail ma'lumotlar
+					const detailRows =
+						detailsByOrderId[orderId]
+
+					const productList = Array.isArray(detailRows)
+						? detailRows.map((row, index) =>
+								normalizeDetailRow(
+									row,
+									index,
+									orderId
+								)
+						  )
+						: []
+
+					const isLoadingProducts =
+						loadingOrderId === orderId
+
+					const productsError =
+						errorByOrderId[orderId]
+
+					// ==========================================
+					// MUHIM:
+					// UZS -> kursga ko'paytirilmaydi
+					// USD -> kursga ko'paytiriladi
+					// ==========================================
+					const orderTotal = getOrderTotal(order)
+
+					const orderCurrency =
+						getCurrencyName(order)
+
 					const statusLabel =
-						order.status && typeof order.status === 'object'
-							? order.status.name ?? order.status.id ?? 'Noma’lum'
+						order.status &&
+						typeof order.status === 'object'
+							? order.status.name ??
+							  order.status.id ??
+							  'Noma’lum'
 							: order.status ?? 'Noma’lum'
-					const orderDate = parseOrderDate(order.date)
+
+					const orderDate = parseOrderDate(
+						order.date
+					)
 
 					return (
 						<div
@@ -151,63 +327,120 @@ const OrderList = () => {
 							<div className='flex justify-between items-center'>
 								<div>
 									<p>
-										<strong>№ {order.code ?? order.number ?? order.orderNumber ?? orderId}</strong>
+										<strong>
+											№{' '}
+											{order.code ??
+												order.number ??
+												order.orderNumber ??
+												orderId}
+										</strong>
 									</p>
+
 									<p>
 										Summa:{' '}
-										{orderTotal
-											.toLocaleString('fr-FR', {
-												maximumFractionDigits: 4,
-											})
-											.replace(/\s/g, ' ')}{' '}
+										{formatNumber(
+											orderTotal
+										)}{' '}
 										UZS
 									</p>
+
 									<p>
 										Sana:{' '}
-										{orderDate ? orderDate.toLocaleString() : '—'}
+										{orderDate
+											? orderDate.toLocaleString()
+											: '—'}
 									</p>
+
 									<p className='text-gray-950 dark:text-gray-300'>
-										Status: {statusLabel}
+										Status:{' '}
+										{statusLabel}
 									</p>
 								</div>
+
 								<button
-									onClick={() => toggleProducts(orderId)}
+									onClick={() =>
+										toggleProducts(
+											orderId
+										)
+									}
 									className='px-2 py-2 rounded text-xl'
 								>
-									{expandedOrders[orderId] ? <FaCaretUp /> : <FaCaretDown />}
+									{expandedOrders[
+										orderId
+									] ? (
+										<FaCaretUp />
+									) : (
+										<FaCaretDown />
+									)}
 								</button>
 							</div>
 
 							{expandedOrders[orderId] && (
 								<div className='mt-3 space-y-2'>
 									{isLoadingProducts ? (
-										<p className='text-sm text-gray-500'>Yuklanmoqda...</p>
-									) : productsError ? (
-										<p className='text-sm text-red-500'>{productsError}</p>
-									) : productList.length > 0 ? (
-										productList.map(product => (
-											<div
-												key={product.key}
-												className='border rounded p-2 bg-gray-50 flex items-center gap-3 dark:bg-gray-700'
-											>
-												<div className='min-w-0'>
-													<p className='font-medium line-clamp-2'>
-														{product.name}
-													</p>
-													<p className='text-sm text-gray-600 dark:text-gray-300'>
-														{product.quantity} {product.measureName} ×{' '}
-														{product.price.toLocaleString('fr-FR', { maximumFractionDigits: 4 }).replace(/\s/g, ' ')}{' '}
-														{product.currencyName}
-													</p>
-												</div>
-											</div>
-										))
-									) : productsCount > 0 ? (
 										<p className='text-sm text-gray-500'>
-											Bu buyurtmada {productsCount} ta mahsulot bor, lekin batafsil ma'lumot topilmadi
+											Yuklanmoqda...
+										</p>
+									) : productsError ? (
+										<p className='text-sm text-red-500'>
+											{productsError}
+										</p>
+									) : productList.length >
+									  0 ? (
+										productList.map(
+											product => (
+												<div
+													key={
+														product.key
+													}
+													className='border rounded p-2 bg-gray-50 flex items-center gap-3 dark:bg-gray-700'
+												>
+													<div className='min-w-0'>
+														<p className='font-medium line-clamp-2'>
+															{
+																product.name
+															}
+														</p>
+
+														<p className='text-sm text-gray-600 dark:text-gray-300'>
+															{
+																product.quantity
+															}{' '}
+															{
+																product.measureName
+															}{' '}
+															×{' '}
+
+															{formatNumber(
+																product.price
+															)}{' '}
+
+															{
+																product.currencyName
+															}
+														</p>
+													</div>
+												</div>
+											)
+										)
+									) : productsCount >
+									  0 ? (
+										<p className='text-sm text-gray-500'>
+											Bu buyurtmada{' '}
+											{
+												productsCount
+											}{' '}
+											ta mahsulot
+											bor, lekin
+											batafsil
+											ma'lumot
+											topilmadi
 										</p>
 									) : (
-										<p className='text-sm text-gray-500'>Mahsulotlar mavjud emas</p>
+										<p className='text-sm text-gray-500'>
+											Mahsulotlar
+											mavjud emas
+										</p>
 									)}
 								</div>
 							)}
@@ -216,13 +449,23 @@ const OrderList = () => {
 				})
 			) : (
 				<div className='w-full h-full flex flex-col gap-0 items-center justify-center fixed top-0 left-0 overflow-hidden hide-scrollbar'>
-					<img src={nothingFound} className='w-[300px]' />
-					<h2 className='text-3xl font-semibold mb-2'>Hech nima topilmadi</h2>
+					<img
+						src={nothingFound}
+						className='w-[300px]'
+					/>
+
+					<h2 className='text-3xl font-semibold mb-2'>
+						Hech nima topilmadi
+					</h2>
+
 					<p className='mb-2 text-xl dark:text-gray-400'>
 						Avval mahsulot harid qiling
 					</p>
+
 					<Link to={'/'}>
-						<Button>Kategoriyalar</Button>
+						<Button>
+							Kategoriyalar
+						</Button>
 					</Link>
 				</div>
 			)}
@@ -238,37 +481,61 @@ const OrderList = () => {
 									href='#'
 									onClick={e => {
 										e.preventDefault()
-										setPage(prev => Math.max(1, prev - 1))
+
+										setPage(prev =>
+											Math.max(
+												1,
+												prev - 1
+											)
+										)
 									}}
-									className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+									className={
+										page <= 1
+											? 'pointer-events-none opacity-50'
+											: ''
+									}
 								/>
 							</PaginationItem>
 
 							{/* Page Numbers */}
-							{pagesToShow.map((p, index) => {
-								if (p === 'ellipsis') {
+							{pagesToShow.map(
+								(p, index) => {
+									if (
+										p ===
+										'ellipsis'
+									) {
+										return (
+											<PaginationItem
+												key={`ellipsis-${index}`}
+											>
+												<PaginationEllipsis />
+											</PaginationItem>
+										)
+									}
+
 									return (
-										<PaginationItem key={`ellipsis-${index}`}>
-											<PaginationEllipsis />
+										<PaginationItem
+											key={p}
+										>
+											<PaginationLink
+												href='#'
+												isActive={
+													p ===
+													page
+												}
+												onClick={e => {
+													e.preventDefault()
+													setPage(
+														p
+													)
+												}}
+											>
+												{p}
+											</PaginationLink>
 										</PaginationItem>
 									)
 								}
-
-								return (
-									<PaginationItem key={p}>
-										<PaginationLink
-											href='#'
-											isActive={p === page}
-											onClick={e => {
-												e.preventDefault()
-												setPage(p)
-											}}
-										>
-											{p}
-										</PaginationLink>
-									</PaginationItem>
-								)
-							})}
+							)}
 
 							{/* Next */}
 							<PaginationItem>
@@ -276,10 +543,19 @@ const OrderList = () => {
 									href='#'
 									onClick={e => {
 										e.preventDefault()
-										setPage(prev => Math.min(totalPages, prev + 1))
+
+										setPage(prev =>
+											Math.min(
+												totalPages,
+												prev + 1
+											)
+										)
 									}}
 									className={
-										page >= totalPages ? 'pointer-events-none opacity-50' : ''
+										page >=
+										totalPages
+											? 'pointer-events-none opacity-50'
+											: ''
 									}
 								/>
 							</PaginationItem>
