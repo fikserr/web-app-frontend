@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../lib/api";
-import { getUserId, decodeJwtPayload } from "../lib/auth";
-import { resolveDisplayPrice } from "../lib/pricing";
+import { getTokenContractor, getTokenStock, getUserId, decodeJwtPayload } from "../lib/auth";
+import { getTokenCurrencyId, resolveDisplayPrice } from "../lib/pricing";
 import { getUsdToUzsRate } from "../lib/appConfig";
 
 const safeNumber = (value, fallback = 0) => {
@@ -66,17 +66,14 @@ function normalizeTokenOrderContext() {
   const token = localStorage.getItem('token') || '';
   const payload = decodeJwtPayload(token);
 
-  const customer = findNestedValue(payload, ['customer', 'client', 'contractor']) || {};
-  const stock = findNestedValue(payload, ['stock', 'warehouse', 'sklad']) || {};
-  const contractor = findNestedValue(payload, ['contractor', 'customer', 'client']) || customer || {};
+  const customer = getTokenContractor();
+  const stock = getTokenStock();
+  const contractor = customer;
   const object =
     findNestedValue(payload, ['object', 'pointOfSale', 'salesPoint', 'pointOfsale', 'pointOfSaleInfo', 'tochkaProdaji']) ||
     { id: '', name: '' };
   const priceType = findNestedValue(payload, ['priceType', 'pricingType']) || { id: '', name: '' };
   const rate = safeNumber(findNestedValue(payload, ['rate', 'defaultRate']) ?? getUsdToUzsRate(), getUsdToUzsRate());
-
-  const customerId =
-    customer?.id || customer?.Id || customer?.ID || contractor?.id || contractor?.Id || '';
 
   return {
     userId: String(getUserId() || payload.userId || payload.sub || ''),
@@ -85,8 +82,8 @@ function normalizeTokenOrderContext() {
       name: stock.name || stock.Name || 'Asosiy sklad',
     },
     contractor: {
-      id: contractor.id || contractor.Id || contractor.ID || customerId || '',
-      name: contractor.name || contractor.fullName || contractor.Name || customer.name || customer.fullName || 'Kundalik',
+      id: contractor.id || '',
+      name: contractor.name || 'Kundalik',
     },
     object: {
       id: object.id || object.Id || object.ID || '',
@@ -176,7 +173,12 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
     oldPrice: Number(oldPrice.toFixed(4)),
     currency: {
       name: item.currencyName || item.currency?.name || rawPriceFallback?.currency?.name || 'UZS',
-      id: item.currencyId || item.currency?.id || rawPriceFallback?.currency?.id || '',
+      id:
+        getTokenCurrencyId() ||
+        item.currencyId ||
+        item.currency?.id ||
+        rawPriceFallback?.currency?.id ||
+        '',
     },
   };
 }
