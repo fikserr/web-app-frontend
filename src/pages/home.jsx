@@ -36,24 +36,6 @@ const TextBlocks = ({ blocks }) =>
     )
   })
 
-// Shown until /config has loaded (or if the 1C fields are left empty) so the page never
-// looks broken/blank. The "---" lines are section separators: the home page slots the
-// top-products swiper after the 1st section and the categories swiper after the 2nd
-// (see lib/homeText.js).
-const DEFAULT_TITLE = 'Texno Bozor'
-const DEFAULT_TEXT = `Texno Bozor — zamonaviy texnika dunyosi sizning qo'lingizda. Smartfonlar, noutbuklar, gadjetlar va boshqa elektronika mahsulotlarini ishonchli va qulay tarzda xarid qiling. Biz bilan texnologiyalar har doim bir qadam yaqinroq!
-
-Uslub, qulaylik va zamonaviylik bir joyda — har kuningizga ilhom bag'ishlaydigan texnikalar do'konimizga marhamat
-
----
-
-Texno Bozorda har bir mahsulot sinovdan o'tkazilgan va sifat kafolati bilan sotiladi. Maqsadimiz — zamonaviy texnikani sizga eng qulay narxlarda va ishonchli tarzda yetkazish.
-
----
-
-📍 Farg'ona vil., Qo'qon shahar, Turon ko'chasi, 6
-📞 +998 90 302-33-33
-🕗 Du-Sha 09:00-18:00`
 
 const Home = () => {
   const navigate = useNavigate()
@@ -71,8 +53,10 @@ const Home = () => {
   const isTopLoading = topLoading || registered === undefined
   const isCategoriesLoading = categoriesLoading || registered === undefined
 
-  const title = config?.title?.trim() || DEFAULT_TITLE
-  const chunks = splitHomeTextChunks(config?.text?.trim() || DEFAULT_TEXT)
+  const title = config?.title?.trim() || ''
+  const chunks = config?.text?.trim()
+    ? splitHomeTextChunks(config.text.trim())
+    : []
   const [introChunk, brandChunk, ...restChunks] = chunks
 
   const handleCategoryClick = (category) => {
