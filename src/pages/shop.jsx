@@ -36,7 +36,7 @@ const Shop = () => {
 		error: productsError,
 	} = useProducts({
 		page: 1,
-		pageSize: 4,
+		pageSize: 1000,
 		userId: userId,
 		categoryId: selectedCategory?.id,
 	})

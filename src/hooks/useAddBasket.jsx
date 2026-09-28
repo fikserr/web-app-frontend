@@ -3,6 +3,24 @@ import { resolveDisplayPrice } from "../lib/pricing";
 
 const STORAGE_KEY = "basket_counts";
 
+const getAvailableQuantity = (product) => {
+  const values = [
+    product?.quantities?.[0]?.remainder,
+    product?.remainder,
+    product?.remainders?.[0]?.remainder,
+    product?.stock?.remainder,
+    product?.quantity,
+    product?.availableQuantity,
+  ];
+
+  const found = values.find((value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && numeric >= 0;
+  });
+
+  return found == null ? null : Number(found);
+};
+
 const useAddBasket = () => {
   const [counts, setCounts] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -19,15 +37,25 @@ const useAddBasket = () => {
 
     setCounts((prev) => {
       const updated = { ...prev };
-      if (qty <= 0) {
+      const requestedQty = Number(qty);
+      const maxQty = getAvailableQuantity(product);
+
+      if (!Number.isFinite(requestedQty) || requestedQty <= 0) {
         delete updated[productId];
         return updated;
       }
+
+      const cappedQty = maxQty == null ? requestedQty : Math.min(requestedQty, maxQty);
+      if (cappedQty <= 0) {
+        delete updated[productId];
+        return updated;
+      }
+
       const displayPrice = resolveDisplayPrice(product);
       updated[productId] = {
         ...product,
         productId,
-        count: qty,
+        count: cappedQty,
         // shown to the customer everywhere in the basket UI — always UZS
         price: displayPrice.price,
         oldPrice: displayPrice.oldPrice,
