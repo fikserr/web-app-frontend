@@ -147,6 +147,15 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
   const productName = item.name || item.productName || item.product?.name || 'Mahsulot';
   const quantityStock = item.quantities?.[0]?.stock || item.stock || fallbackStock || { id: '', name: 'Asosiy sklad' };
   const measure = resolveMeasureInfo(item);
+  const remainder = [
+    item?.quantities?.[0]?.remainder,
+    item?.remainders?.[0]?.remainder,
+    item?.remainder,
+    item?.totalReminder,
+    item?.stock?.remainder,
+    item?.quantity,
+    item?.availableQuantity,
+  ].find(value => Number.isFinite(Number(value)) && Number(value) >= 0);
 
   return {
     product: {
@@ -165,7 +174,7 @@ function normalizeProduct(item, counts = {}, fallbackStock = { id: '', name: 'As
           name: measure.name,
           id: measure.id,
         },
-        remainder: item.quantities?.[0]?.remainder ?? 0,
+        remainder: Number(remainder ?? 0),
         amount: Number((quantity * price).toFixed(4)),
       },
     ],
@@ -216,7 +225,8 @@ export default function useOrder() {
         const productId = item?.product?.id || item?.id || '';
         const quantity = Number(item?.quantities?.[0]?.quantity ?? 0);
         const price = Number(item?.price ?? 0);
-        return Boolean(productId) && quantity > 0 && price > 0;
+        const remainder = Number(item?.quantities?.[0]?.remainder ?? 0);
+        return Boolean(productId) && quantity > 0 && price > 0 && remainder > 0;
       });
 
       if (!validProducts.length) {
